@@ -1,0 +1,136 @@
+"use server";
+import { createAdminClient } from "../appwrite";
+import { ID } from "node-appwrite";
+import { parseStringify, generateStudentId } from "../utils";
+// import { nanoid } from "nanoid";
+const {
+  // APPWRITE_POST_COLLECTION_ID: POST_COLLECTION_ID,
+  // APPWRITE_STORAGE_ID: STORAGE_ID,
+  APPWRITE_DATABASE_ID: DATABASE_ID,
+  // NEXT_PUBLIC_APPWRITE_ENDPOINT: ENDPOINT,
+  // APPWRITE_USER_COLLECTION_ID: USER_COLLECTION_ID,
+  // NEXT_PUBLIC_APPWRITE_PROJECT: PROJECT_ID,
+  APPWRITE_STUDENTS_COLLECTION_ID: STUDENTS_COLLECTION_ID,
+  // APPWRITE_RESULT_COLLECTION_ID: RESULTS_ID,
+  // APPWRITE_TRANSACTION_COLLECTION_ID: TRANSACTIONS_ID,
+  // APPWRITE_CLASS_COLLECTION_ID: CLASSES,
+  // APPWRITE_SCRATCHCARD_COLLECTION_ID: SCRATCHCARD_COLLECION_ID,
+} = process.env;
+
+// async function processStudentsInBatches(students, batchSize = 100) {
+//   const total = students.length;
+//   let processed = 0;
+
+//   for (let i = 0; i < total; i += batchSize) {
+//     const batch = students.slice(i, i + batchSize);
+//     console.log("Processing batch", Math.ceil(i / batchSize) + 1, batch.length , students...);
+
+//     const results = await createStudentDocumentsBatch(batch);
+//     processed += batch.length;
+
+//     results.forEach(({ success, student, error }) => {
+//       if (success) {
+//         console.log("✔ Successfully added:", student);
+//       } else if (error){
+//         console.error("❌ Failed to add: ",student, error);
+//       }
+//     });
+
+//     console.log("Processed", processed , total ,students.);
+//   }
+
+//   console.log("All batches processed!");
+// }
+
+// async function createStudentDocumentsBatch(batch) {
+//   const results = [];
+//   for (const student of batch) {
+//     try {
+//       const { database } = await createAdminClient();
+//       const response = await database.createDocument(
+//         DATABASE_ID!,
+//         STUDENTS_COLLECTION_ID!,
+//         ID.unique(), // Generate a unique document ID
+//         student
+//       );
+//       results.push({ success: true, student: student.fullName, response });
+//     } catch (error) {
+//       results.push({ success: false, student: student.fullName, error });
+//     }
+//   }
+//   return results;
+// }
+export const inputStudentInfo = async ({
+  name,
+  classRoom,
+  dateOfBirth,
+  expirationTime,
+  guardianInfo,
+  studentId,
+}: StudentInfoProps) => {
+  try {
+    const { database } = await createAdminClient();
+    if (
+      name.length === 0 ||
+      dateOfBirth.length === 0 ||
+      guardianInfo.length === 0
+    ) {
+      console.error(
+        "Something is missing in this StudentsInfo",
+        name,
+        dateOfBirth,
+        guardianInfo,
+        classRoom,
+        studentId,
+        expirationTime
+      );
+    }
+    const newStudentInfo = await database.createDocument(
+      DATABASE_ID!,
+      STUDENTS_COLLECTION_ID!,
+      ID.unique(),
+      {
+        name,
+        classRoom,
+        dateOfBirth,
+        guardianInfo,
+        expirationTime,
+        studentId,
+      }
+    );
+    return parseStringify(newStudentInfo);
+  } catch (error) {
+    console.log("error Inputing the Students Info", error);
+  }
+};
+
+export const deleteStudent = async ({ id }: { id: string }) => {
+  try {
+    const { database } = await createAdminClient();
+    const deletedStudent = await database.deleteDocument(
+      DATABASE_ID!,
+      STUDENTS_COLLECTION_ID!,
+      id
+    );
+
+    if (!deletedStudent) {
+      throw new Error("Failed to delete -this User😭.");
+    }
+  } catch (error) {
+    console.log("Error deleting the selected User:", error);
+  }
+};
+export async function getStudentById(id: string) {
+  try {
+    const { database } = await createAdminClient();
+    const result = await database.getDocument(
+      DATABASE_ID!,
+      STUDENTS_COLLECTION_ID!,
+      id
+    );
+
+    return parseStringify(result);
+  } catch (error) {
+    console.log(error);
+  }
+}
