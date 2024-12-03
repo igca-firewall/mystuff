@@ -110,11 +110,11 @@ const AuthForm = ({
       setIsLoading(false);
     }
   };
- const ren = () => {
-  switch (select) {
+//  const ren = () => {
+//   switch (select) {
     
-  }
- }
+//   }
+//  }
 
   const renderRoleSpecificFields = () => {
     switch (selectedRole) {
