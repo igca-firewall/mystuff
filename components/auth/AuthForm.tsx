@@ -28,7 +28,7 @@ const AuthForm = ({
   role,
 }: {
   type: string;
-  role: "admin" | "teacher" | "viewer";
+  role: "admin" | "teacher" | "student";
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { mutateAsync: createUser } = useSignUp();
@@ -51,7 +51,7 @@ const AuthForm = ({
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      if (type === "sign-up" && (role === "viewer" || role === "teacher")) {
+      if (type === "sign-up" ) {
         const avatarUrl = generateAvatar(
           data.firstName || data.lastName || "User"
         );
@@ -110,11 +110,6 @@ const AuthForm = ({
       setIsLoading(false);
     }
   };
-//  const ren = () => {
-//   switch (select) {
-    
-//   }
-//  }
 
   const renderRoleSpecificFields = () => {
     switch (selectedRole) {
