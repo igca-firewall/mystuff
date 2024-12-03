@@ -25,6 +25,7 @@ export enum FormFieldType {
   SELECT = "select",
   SKELETON = "skeleton",
 }
+//  const myVariable: string = "example"; // Example type
 
 interface CustomProps {
   control: Control<any>;

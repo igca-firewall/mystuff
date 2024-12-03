@@ -15,7 +15,7 @@ const StudentForm = () => {
   );
 
   // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // const [ setIsModalOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false); // New state for processing status
   const [isSuccess, setIsSuccess] = useState(false); // State for success popup
   const [isFailure, setIsFailure] = useState(false); // State for failure popup
@@ -119,10 +119,10 @@ const StudentForm = () => {
       }
     }
   };
-  const [selectedValue, setSelectedValue] = useState("");
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
+  // const [selectedValue, setSelectedValue] = useState("");
+  // const closeModal = () => {
+  //   setIsModalOpen(false);
+  // };
   // Success and failure popup auto-close handler
   const autoClosePopup = (
     setState: React.Dispatch<React.SetStateAction<boolean>>
@@ -149,7 +149,7 @@ const StudentForm = () => {
     setIsSuccess(false); // Reset before submission
     setIsFailure(false); // Reset before submission
 
-    let allSubmissionsSuccessful = true;
+    // let allSubmissionsSuccessful = true;
 
     try {
       const expirationTime = new Date();
@@ -180,7 +180,7 @@ const StudentForm = () => {
           }
         } catch (studentError) {
           console.error("Error submitting student:", studentError);
-          allSubmissionsSuccessful = false; // If any submission fails, mark as failure
+          // allSubmissionsSuccessful = false; // If any submission fails, mark as failure
           break; // Stop the loop if one submission fails
         }
       }

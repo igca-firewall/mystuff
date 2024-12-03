@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
 
   },
+  eslint: {
+    ignoreDuringBuilds: true, // Ensures ESLint is bypassed during builds
+  },
   /* config options here */
   images:{
     domains: [

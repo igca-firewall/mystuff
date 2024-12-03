@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 import { useUserContext } from "@/context/AuthContext";
 import Image from "next/image";
 import React from "react";
-import { decryptKey } from "@/lib/utils";
+// import { decryptKey } from "@/lib/utils";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 interface LinkItem {
   route: string;
@@ -23,7 +23,7 @@ const Topbar: React.FC<xee> = ({ links}) => {
   const [isVisible, setIsVisible] = useState(true);
    let lastScrollTop = 0;
 
-  const router = useRouter(); // Use router to programmatically navigate
+  // const router = useRouter(); // Use router to programmatically navigate
    const { user } = useUserContext();
   // useEffect(() => {
   //   const fetchUserInfo = async () => {
@@ -78,12 +78,12 @@ const Topbar: React.FC<xee> = ({ links}) => {
   // }, [links]); // Re-run this effect when `links` change
 
   // Handle click on the notification indicator
-  const handleNotificationClick = () => {
-    const firstNotificationLink = links.find((link) => link.hasNotification);
-    if (firstNotificationLink) {
-      router.push(firstNotificationLink.route); // Navigate to the first notification route
-    }
-  };
+  // const handleNotificationClick = () => {
+  //   const firstNotificationLink = links.find((link) => link.hasNotification);
+  //   if (firstNotificationLink) {
+  //     router.push(firstNotificationLink.route); // Navigate to the first notification route
+  //   }
+  // };
   console.log(user, "user");
   const userImage = user.image
   return (

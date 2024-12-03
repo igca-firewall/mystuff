@@ -1,8 +1,9 @@
 import { logoutAccount } from "@/lib/actions/user.actions";
-import { useSignOutAccount } from "@/lib/react-query/queriesAndMutation";
+// import { useSignOutAccount } from "@/lib/react-query/queriesAndMutation";
 import { LocalStorageManager } from "@/lib/utils";
 import Image from "next/image";
-import { redirect, useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
+// import { redirect, useRouter } from "next/navigation";
 import React from "react";
 
 const Logout = () => {
