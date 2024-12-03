@@ -5,6 +5,8 @@
 // import { redirect, useRouter } from "next/navigation";
 import React from "react";
 import Logout from "./Logout";
+import Image from "next/image";
+import Link from "next/link";
 
 const Footer = ({ user, type = "desktop" }: FooterProps) => {
   
@@ -12,16 +14,21 @@ const Footer = ({ user, type = "desktop" }: FooterProps) => {
     <footer className=" py-3 px-2  ">
       <div className="flex gap-2 ">
         <div>
-          <div
-            className={type === "mobile" ? "footer_name-mobile" : "footer_name"}
-          >
-            <p className="text-[15px] font-bold text-gray-700 dark:text-neutral-300">
-              {user?
-              
-            user?.firstName : "First Name"}
-             
-            </p>
-          </div>
+        <Link href="/personalization">
+              <div className="flex items-center">
+                <div className="w-8 h-8 overflow-hidden rounded-full">
+                  <Image
+                    src={user.image }
+                    alt="User Image"
+                    width={38}
+                    height={38}
+                    className="w-8 h-8 rounded-full object-cover"
+                    layout="responsive"
+                    quality={100}
+                  />
+                </div>
+              </div>
+            </Link>
         </div>
 
         <div className=" flex ">

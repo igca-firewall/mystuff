@@ -68,7 +68,7 @@ export const home = [
     imgURL: "/icons/chat.svg",
     route: "/messaging",
     label: "Inbox",
-    hasNotification: true
+
   },
 
   {
@@ -84,8 +84,8 @@ export const home = [
     
   },
   {
-    imgURL: "/icons/search.svg",
-    route: "/search",
+    imgURL: "/icons/plus.svg",
+    route: "/create-post",
     label: "Search",
     
   },
@@ -103,55 +103,15 @@ export const market = [
   },
   {
     imgURL: "/icons/shopping-bag.svg",
-    route: "/games-ticket",
+    route: "/scratch-cards",
     label: "Tickets",
   },
-  {
-    imgURL: "/icons/stripe.svg",
-    route: "/other-products",
-    label: "Other Products",
-  },
+  // {
+  //   imgURL: "/icons/stripe.svg",
+  //   route: "/other-products",
+  //   label: "Other Products",
+  // },
 
-];
-export const game = [
-  {
-    imgURL: "/icons/game.png",
-    route: "/games",
-    label: "You",
-  },
-
-  {
-    imgURL: "/icons/followers.svg",
-    route: "/join-game",
-    label: "Join Game",
-  },
-  {
-    imgURL: "/icons/gallery-add.svg",
-    route: "/host-game",
-    label: "Host Game",
-  },
-
-  {
-    imgURL: "/icons/link.png",
-    route: "/links",
-    label: "Host Game",
-  },
-  {
-    imgURL: "/icons/tips.png",
-    route: "/tips",
-    label: "You",
-  },
-  {
-    imgURL: "/icons/gift.png",
-    route: "/rewards",
-    label: "Tips",
-  },
-
-  {
-    imgURL: "/icons/follow.svg",
-    route: "/me",
-    label: "You",
-  },
 ];
 
 

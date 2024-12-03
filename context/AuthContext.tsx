@@ -9,10 +9,9 @@ export const INITIAL_USER: User = {
   phone: "",
   userId: "",
 
-  firstName: "",
-  lastName: "",
+  name: "",
 
-  imageUrl: "",
+  image: "",
 };
 
 const INITIAL_STATE: IContextType = {
@@ -44,7 +43,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
-
   const checkAuthUser = async () => {
     setIsLoading(true);
     try {
@@ -52,13 +50,13 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (currentAccount) {
         setUser({
           $id: currentAccount.$id,
-          firstName: currentAccount.firstName,
-          lastName: currentAccount.lastName,
+          name: currentAccount.name,
+
           email: currentAccount.email,
           phone: currentAccount.phone,
           userId: currentAccount.userId,
-      
-          imageUrl: currentAccount.imageUrl,
+
+          image: currentAccount.image,
         });
         setIsAuthenticated(true);
         return true;

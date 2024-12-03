@@ -51,8 +51,8 @@ interface User {
   name: string;
   userId: string;
 
-  firstName: string;
-  lastName: string;
+  firstName?: string;
+  lastName?: string;
   // name: string;
   // address1: string;
   // city: string;
@@ -60,13 +60,7 @@ interface User {
   // postalCode: string;
   dateOfBirth?: string;
   // ssn: string;
-  imageUrl: string;
-  imageId?: string;
-  // coverUrl: string;
-  bio?: string;
-  Links?: string[];
-  following?: string[];
-  // UserType?: UserType;
+  image: string;
 }
 interface AuthContextType {
   user: User;
@@ -379,7 +373,8 @@ declare type SignUpParams = {
   lastName?: string;
   guardianContact?: string;
   dob?: string;
-  subject?:string;
+  name: string;
+  subject?: string;
   adminContact?: string;
   adminId?: string;
   adminCode?: string;
@@ -388,7 +383,15 @@ declare type SignUpParams = {
   image: string;
   password: string;
 };
-
+declare type AdminProps = {
+  name: string;
+  image?: string;
+  adminCode: string;
+  adminId: string;
+  adminContact: string;
+  email: string;
+  password: string;
+};
 type Particles = {
   bio: string;
   coverUrl: string;

@@ -7,123 +7,120 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-
 import {
   authFormSchema,
-  // storeSessionInLocalStorage,
   generateAvatar,
   storeSessionInLocalStorage,
 } from "@/lib/utils";
-
 import CustomFormField, { FormFieldType } from "../utilities/CustomInput";
 import Loader from "../utilities/Loader";
-import { useSignIn, useSignUp } from "@/lib/react-query/queriesAndMutation";
-// import { useUserContext } from "@/context/AuthContext";
-import { redirect, useRouter } from "next/navigation";
-import { createScratchCard } from "@/lib/actions/scratchCard.actions";
-// import { createSubject } from "@/lib/actions/subjects.actions";
+import {
+  useSignIn,
+  useSignUp,
+  useAdminSignIn,
+} from "@/lib/react-query/queriesAndMutation";
+import { useRouter } from "next/navigation";
 import CustomRadio from "../utilities/CustomRoleRadio";
+import { createScratchCard } from "@/lib/actions/scratchCard.actions";
 
 const AuthForm = ({
   type,
   role,
 }: {
   type: string;
-  role: "admin" | "teacher" | "student";
+  role: "admin" | "teacher" | "viewer";
 }) => {
-  // const router = useRouter();
-  const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  // const { checkAuthUser } = useUserContext();
-  const formSchema = authFormSchema(type, role);
   const { mutateAsync: createUser } = useSignUp();
   const { mutateAsync: signUser } = useSignIn();
+  const { mutateAsync: adminSignIn } = useAdminSignIn();
+  const formSchema = authFormSchema(type, role);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
       password: "",
-      role: "student", // default role
+      role: "viewer",
     },
   });
+
   const selectedRole = form.watch("role");
   const router = useRouter();
+
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsLoading(true);
-    console.log("Auth data ", data);
-
-    // const isLoggedIn = await checkAuthUser();
     try {
-      if (type === "sign-up") {
+      if (type === "sign-up" && (role === "viewer" || role === "teacher")) {
         const avatarUrl = generateAvatar(
-          data.firstName || data.lastName || "Administrator"
+          data.firstName || data.lastName || "User"
         );
-
         const userData = {
           email: data.email,
           password: data.password,
           role: data.role!,
-          image: avatarUrl!,
-          name: `${data.firstName!} ${data.lastName!}` || "Administrator",
-          ...(data.role === "admin" && {
-            adminCode: data.adminCode!,
-
-            adminId: data.adminId!, // Generate ID dynamically
-            adminContact: data.adminContact!,
-          }),
+          image: avatarUrl,
+          name: `${data.firstName} ${data.lastName}` || "User",
           ...(data.role === "teacher" && {
-            subject: data.subject!,
-            phone: data.phone!,
+            subject: data.subject,
+            phone: data.phone,
           }),
-          ...(data.role === "student" && {
-            dob: data.dob!,
-            guardianContact: data.guardianContact!,
+          ...(data.role === "viewer" && {
+            dob: data.dob,
+            guardianContact: data.guardianContact,
           }),
         };
-        try {
-          console.log("userData", userData);
-          const newUser = await createUser(userData);
-          const scratchCard = await createScratchCard();
-          // const subject = await createSubject({
-          //   name: "English",
-          //   classRoom: ["ss1", "ss2"],
-          // });
-          console.log(scratchCard, "thats scratch card");
-          setUser(newUser);
+
+        const newUser = await createUser(userData);
+        const scratchCard = await createScratchCard();
+        if (newUser) {
+          console.log("User and scratch card created", newUser, scratchCard);
           form.reset();
-          storeSessionInLocalStorage()
-          redirect("/");
-        } catch (error) {
-          console.error("Sign-up failed:", error);
+          storeSessionInLocalStorage();
+          router.push("/");
         }
       } else if (type === "sign-in") {
         const response = await signUser({
           email: data.email,
           password: data.password,
         });
-        if (!response) {
-          return null;
-        } else {
+        if (response) {
           form.reset();
-          storeSessionInLocalStorage()
+          storeSessionInLocalStorage();
+          router.push("/");
+        }
+      } else if (role === "admin" && type === "sign-up") {
+        const response = await adminSignIn({
+          email: data.email,
+          password: data.password,
+          adminCode: data.adminCode!,
+          name: `${data.firstName} ${data.lastName}`,
+          adminId: data.adminId!,
+          adminContact: data.adminContact!,
+        });
+        if (response) {
+          form.reset();
+          storeSessionInLocalStorage();
           router.push("/");
         }
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error during authentication", error);
     } finally {
       setIsLoading(false);
     }
   };
+ const ren = () => {
+  switch (select) {
+    
+  }
+ }
 
   const renderRoleSpecificFields = () => {
     switch (selectedRole) {
       case "admin":
         return (
           <>
-            {" "}
             <div className="flex gap-3 items-center">
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
@@ -184,7 +181,6 @@ const AuthForm = ({
                 placeholder="Enter your last name."
               />
             </div>
-
             <div className="flex gap-3 items-center">
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
@@ -192,7 +188,7 @@ const AuthForm = ({
                 name="subject"
                 label="Subject Specialization"
                 placeholder="Enter your subject."
-              />{" "}
+              />
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
                 control={form.control}
@@ -203,7 +199,7 @@ const AuthForm = ({
             </div>
           </>
         );
-      case "student":
+      case "viewer":
         return (
           <>
             <div className="flex gap-3 items-center">
@@ -247,17 +243,13 @@ const AuthForm = ({
 
   return (
     <section className="auth-form min-h-screen flex flex-col justify-start">
+      {" "}
       <header className="flex flex-col gap-5 md:gap-8">
-        <div className="flex flex-col gap-1 md:gap-3">
-          <h1 className="text-24 lg:text-36 font-semibold text-gray-900 dark:text-neutral-300">
-            {type === "sign-in" ? "Sign In" : "Sign Up"}
-          </h1>
-          <p className="text-16 font-normal text-gray-600 dark:text-neutral-300">
-            Please enter your details.
-          </p>
-        </div>
+        <h1 className="text-24 lg:text-36 font-semibold">
+          {type === "sign-in" ? "Sign In" : "Sign Up"}
+        </h1>
+        <p>Please enter your details.</p>
       </header>
-
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           {type === "sign-up" && (
@@ -268,7 +260,7 @@ const AuthForm = ({
                 options={[
                   { label: "Admin", value: "admin" },
                   { label: "Teacher", value: "teacher" },
-                  { label: "Student", value: "student" },
+                  { label: "Student", value: "viewer" },
                 ]}
                 className="space-y-2"
               />
@@ -320,6 +312,7 @@ const AuthForm = ({
           >
             {type === "sign-in" ? "Sign up." : "Sign in."}
           </Link>
+          <br />
         </footer>{" "}
         <div className="flex-col bottom-0 gap-3 mt-2 mb-0 sticky items-center justify-center text-center">
           <p className="flex text-center items-center justify-center  text-gray-400 dark:text-neutral-500 text-sm font-nunito">

@@ -36,13 +36,13 @@ const StudentForm = () => {
     "SS3-Science",
     "SS3-Arts",
   ];
-  
+
   // Transform the array into an array of Option objects
   const options = classOptions.map((classOption) => ({
     value: classOption,
     label: classOption,
   }));
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -59,11 +59,12 @@ const StudentForm = () => {
   const classRefs = useRef<(HTMLSelectElement | null)[]>([]);
 
   // Capitalize the first letter of each word in a string
-  const capitalizeWords = (str: string) => {
-    return str
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(" ");
+  const capitalizeWords = (value: string) => {
+    return value
+      .replace(/\s+/g, " ") // Replace multiple spaces with a single space
+      .replace(/^(\s)/, "") // Remove any leading spaces
+      .replace(/(\s)(\S)/g, (match) => match.toUpperCase()) // Capitalize first letter after space
+      .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize first letter of each word
   };
   // Add this helper function outside the component
   const resetStudentState = () =>
@@ -77,10 +78,17 @@ const StudentForm = () => {
   const handleInputChange = (index: number, field: string, value: string) => {
     const updatedStudents = [...students];
     const globalIndex = startIndex + index; // Adjust for pagination
+
+    // Capitalize full name before updating
+    if (field === "fullName") {
+      value = capitalizeWords(value); // Capitalize full name
+    }
+
     updatedStudents[globalIndex] = {
       ...updatedStudents[globalIndex],
-      [field]: capitalizeWords(value),
+      [field]: value, // Directly assign the value for fields like classRoom
     };
+
     setStudents(updatedStudents);
   };
 
@@ -125,69 +133,68 @@ const StudentForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // const isValidClassRoom = (classRoom: string) => {
-    //     return classOptions.includes(classRoom);
-    //   };
-    // Validate input data
-    const populatedStudents = students.filter(
-      (student) =>
-        student.fullName.trim() !== "" &&
-        student.dateOfBirth.trim() !== "" &&
-        student.parentInfo.trim() !== ""
-    );
+    const isValidStudent = (student: (typeof students)[0]) =>
+      student.fullName.trim() &&
+      student.dateOfBirth.trim() &&
+      student.parentInfo.trim();
 
-    if (populatedStudents.length === 0) {
+    const populatedStudents = students.filter(isValidStudent);
+
+    if (!populatedStudents.length) {
       alert("No valid student data found!");
       return;
     }
-    console.log("students", populatedStudents,e)
 
-    setIsProcessing(true); // Set processing to true before sending the data
+    setIsProcessing(true);
+    setIsSuccess(false); // Reset before submission
+    setIsFailure(false); // Reset before submission
+
+    let allSubmissionsSuccessful = true;
 
     try {
-      const currentDate = new Date();
-
-      // Add 6 years to the current date
-      currentDate.setFullYear(currentDate.getFullYear() + 6);
-
-      // Format the date to a valid ISO 8601 string (e.g., "YYYY-MM-DDTHH:mm:ss")
-      const expirationTime = currentDate
+      const expirationTime = new Date();
+      expirationTime.setFullYear(expirationTime.getFullYear() + 6);
+      const formattedExpirationTime = expirationTime
         .toISOString()
         .split(".")[0]
         .replace("T", " ");
 
-      // Iterate over each student and call the inputStudentInfo function
-      const results = await Promise.all(
-        populatedStudents.map((student) =>
-          inputStudentInfo({
+      // Submit each student data individually and check each result
+      for (const student of populatedStudents) {
+        try {
+          const submitted = await inputStudentInfo({
             name: student.fullName,
             classRoom: student.classRoom,
             dateOfBirth: student.dateOfBirth,
             guardianInfo: student.parentInfo,
-            expirationTime: expirationTime,
-            studentId: `IGCA/ETCHE/${generateStudentId()}${generateStudentId()}`, // You can adjust this value
-          })
-        )
-      );
-      const allSuccessful = results.every((result) => result !== undefined);
-
-      if (allSuccessful) {
-        console.log("Students successfully added:", results, students);
-        setStudents(resetStudentState()); // Reset form
-        setIsSuccess(true); // Indicate success
-        autoClosePopup(setIsSuccess); // Auto-close success popup
-      } else {
-        console.error("Some students failed to be added:", results);
-        setIsFailure(true); // Indicate failure
-        autoClosePopup(setIsFailure); // Auto-close failure popup
+            expirationTime: formattedExpirationTime,
+            studentId: `IGCA/ETCHE/${generateStudentId()}${generateStudentId()}`,
+          });
+          if (submitted) {
+            setStudents(resetStudentState());
+            setIsSuccess(true); // All submissions were successful
+            autoClosePopup(setIsSuccess); // Close success popup after 3 seconds
+          } else {
+            setIsFailure(true); // Some submissions failed
+            autoClosePopup(setIsFailure); // Close failure popup after 3 seconds
+          }
+        } catch (studentError) {
+          console.error("Error submitting student:", studentError);
+          allSubmissionsSuccessful = false; // If any submission fails, mark as failure
+          break; // Stop the loop if one submission fails
+        }
       }
     } catch (error) {
-      console.error("Error submitting student info:", error);
-      setIsFailure(true); // Handle failure
-      autoClosePopup(setIsFailure); // Auto-close failure popup
+      console.error("Error in the process:", error);
+      setErrorMessage(
+        "An error occurred while submitting student information."
+      );
+      setIsFailure(true); // Handle any other errors
+      autoClosePopup(setIsFailure); // Close failure popup after 3 seconds
     } finally {
-      setIsProcessing(false); // Always stop processing
-    }}
+      setIsProcessing(false); // Reset processing state
+    }
+  };
 
   // Handle pagination navigation
   const goToNextPage = () => {
@@ -285,8 +292,10 @@ const StudentForm = () => {
                   <td className="px-4 py-2">
                     <Select
                       options={options}
-                      value={selectedValue}
-                      onChange={setSelectedValue}
+                      value={student.classRoom || ""} // Ensure value is always a string
+                      onChange={(selectedValue) => {
+                        handleInputChange(index, "classRoom", selectedValue); // Update classRoom directly with the string value
+                      }}
                       placeholder="Select a class"
                       className="max-w-md"
                     />
@@ -316,14 +325,17 @@ const StudentForm = () => {
         )}
 
         {/* Failure Popup */}
+
         {isFailure && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-red-100 p-6 rounded-lg text-center">
-              <h2 className="text-xl font-semibold text-red-600">Failure!</h2>
-              <p className="text-gray-700">{errorMessage}</p>
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+            <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
+              <h2 className="text-2xl font-semibold text-red-600 mb-4">
+                Oops, something went wrong!
+              </h2>
+              <p className="text-gray-600 mb-6">{errorMessage}</p>
               <button
                 onClick={closeFailurePopup}
-                className="mt-4 bg-purple-500 text-white px-6 py-2 rounded-full"
+                className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full transition duration-200 ease-in-out"
               >
                 Close
               </button>

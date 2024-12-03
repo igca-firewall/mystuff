@@ -203,47 +203,69 @@ export function formUrlQuery({ params, key, value }: UrlQueryParams) {
 
 //   return date > twoDaysAgo ? "Processing" : "Success";
 // };
-export const authFormSchema = (type: string, role: string) =>
-  z.object({
-    // sign up
-    firstName: type === "sign-in" ? z.string().optional() : role === "admin" ? z.string().optional() : z.string().min(3),
-    lastName: type === "sign-in" ? z.string().optional() : role === "admin" ? z.string().optional() : z.string().min(3),
-    adminCode:  role === "student" || "teacher"? z.string().optional(): z.string().min(12).max(12).optional(),
-    adminId:  role === "student" || "teacher"? z.string().optional(): z.string().min(10).max(10).optional(),
-    role: type === "sign-in" ? z.enum(["admin", "teacher","student"]).optional() : z.string().min(3),
-    // both
-    guardianContact: role === "admin" || "teacher"? z.string().optional() : z
-    .string()
-    .min(7)
-    .max(19)
-    .refine((phone) => /^\+\d{10,15}$/.test(phone), {
-      message:
-        "Phone number must contain country code and only numbers, no special characters allowed",
-    })
-    .optional(),
-    adminContact: role === "student" || "teacher"? z.string().optional(): z
-    .string()
-    .min(7)
-    .max(19)
-    .refine((phone) => /^\+\d{10,15}$/.test(phone), {
-      message:
-        "Phone number must contain country code and only numbers, no special characters allowed",
-    })
-    .optional(),
-    subject:  role === "admin" || "student"? z.string().optional(): z.string().min(2),
-    email: z.string().email(),
-    password: z.string().min(8),
-    dob:  role === "admin" || "teacher"? z.string().optional() : z.string().min(2).max(40),
-    phone:  role === "admin" || "student"? z.string().optional(): z
+
+
+export const authFormSchema = (type: string, role: string) => {
+  return z.object({
+    email: z.string().email("Invalid email").min(1, "Email is required"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    role: z.enum(["admin", "teacher", "viewer"]),
+    firstName: z
       .string()
-      .min(7)
-      .max(19)
-      .refine((phone) => /^\+\d{10,15}$/.test(phone), {
-        message:
-          "Phone number must contain country code and only numbers, no special characters allowed",
-      })
+      .min(1, "First Name is required")
+      .optional(), // Optional for non-relevant roles
+    lastName: z
+      .string()
+      .min(1, "Last Name is required")
       .optional(),
+    phone: z
+      .string()
+      .min(1, "Phone is required")
+      .optional(),
+    dob: z
+      .string()
+      .min(1, "Date of Birth is required")
+      .optional(),
+    guardianContact: z
+      .string()
+      .min(1, "Guardian Contact is required")
+      .optional(),
+    subject: z
+      .string()
+      .min(1, "Subject Specialization is required")
+      .optional(),
+    adminContact: z
+      .string()
+      .min(1, "Admin Contact is required")
+      .optional(),
+    adminCode: z
+      .string()
+      .min(1, "Admin Code is required")
+      .optional(),
+    adminId: z
+      .string()
+      .min(1, "Admin ID is required")
+      .optional(),
+  }).refine((data) => {
+    if (role === "admin") {
+      return (
+        data.adminContact && data.adminCode && data.adminId && data.firstName
+      );
+    }
+    if (role === "teacher") {
+      return data.phone && data.subject && data.firstName;
+    }
+    if (role === "viewer") {
+      return data.dob && data.guardianContact && data.firstName;
+    }
+    return true;
+  }, {
+    message: "Required fields are missing for the selected role.",
+    path: [], // Error applies to the entire object
   });
+};
+
+
 export const PostValidation = z.object({
   location: z
     .string()
@@ -361,9 +383,7 @@ export function generateAvatar(name: string): string {
   const firstLetter = name.trim().charAt(0).toUpperCase() || "?"; // Default to "?" if no valid name
 
   // Predefined set of 15 colors that complement orange
-  const colors = [
-    "#FF5722", "#FF9800", "#FFC107", "#FFEB3B", "#F57C00"
-  ];
+  const colors = ["#FF5722", "#FF9800", "#FFC107", "#FFEB3B", "#F57C00"];
 
   const backgroundColor = colors[Math.floor(Math.random() * colors.length)];
 
@@ -621,11 +641,16 @@ export const signUpSchema = signInSchema.extend({
   email: z.string().email("Invalid email format"),
   password: z.string().min(6, "Password must be at least 6 characters long"),
 });
-export const generateScratchCardCode  = (length = 6): string => {
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-  return Array.from({ length }, () => characters.charAt(Math.floor(Math.random() * characters.length))).join('');
+export const generateScratchCardCode = (length = 6): string => {
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+  return Array.from({ length }, () =>
+    characters.charAt(Math.floor(Math.random() * characters.length))
+  ).join("");
 };
-export const generateStudentId  = (length = 3): string => {
+export const generateStudentId = (length = 3): string => {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  return Array.from({ length }, () => characters.charAt(Math.floor(Math.random() * characters.length))).join('');
+  return Array.from({ length }, () =>
+    characters.charAt(Math.floor(Math.random() * characters.length))
+  ).join("");
 };

@@ -23,6 +23,7 @@ import {
   // deleteAccount,
   // // getLoggedInUser,
   // getUserById,
+  
   logoutAccount,
   signIn,
   signUp,
@@ -33,7 +34,7 @@ import {
   updateUserProfile,
   // updateUserMoreProfile,
 } from "../actions/update.actions";
-
+import {adminSignIn} from "../actions/admin.actions"
 export const useSignUp = () => {
   return useMutation({
     mutationFn: (user: SignUpParams) => signUp(user),
@@ -50,7 +51,19 @@ export const useSignIn = () => {
     mutationFn: (user: { email: string; password: string }) => signIn(user),
   });
 };
+export const useAdminSignIn = () => {
+  return useMutation({
+    mutationFn: (user: { password: string;
+  
+      adminContact: string;
 
+      name: string;
+      
+      adminId: string;
+      adminCode: string;
+      email: string; }) => adminSignIn(user),
+  });
+};
 export const useSignOutAccount = () => {
   return useMutation({
     mutationFn: logoutAccount,

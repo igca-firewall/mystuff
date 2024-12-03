@@ -7,6 +7,7 @@ import { cookies } from "next/headers";
 const {
   APPWRITE_DATABASE_ID: DATABASE_ID,
   APPWRITE_USER_COLLECTION_ID: USER_COLLECTION_ID,
+  APPWRITE_STUDENTS_COLLECTION_ID: STUDENTS_COLLECTION_ID,
 } = process.env;
 
 export const getUserInfo = async ({ userId }: getUserInfoProps) => {
@@ -53,23 +54,44 @@ export const signIn = async ({ email, password }: signInProps) => {
 export const signUp = async ({
   password,
   image,
-  phone,
+  phone,name,
   ...userData
 }: SignUpParams) => {
-  const { email, firstName, lastName } = userData;
+  const { email,  } = userData;
 
   let newUserAccount;
 
   try {
     const { account, users, database } = await createAdminClient();
+    const namees = name;
+    // Check if the user is in the students collection
+    const studentQuery = await database.listDocuments(
+      DATABASE_ID!,
+      STUDENTS_COLLECTION_ID!, // Replace with the actual collection ID of the "students" collection
+      [
+        Query.equal("name", namees), // Use the phone or any other field for filtering
+        // You can add more fields to match if necessary
+        // Query.equal("email", email) // You can add more fields to match if necessary
+      ]
+    );
 
-    // Create the user
+    if (
+      studentQuery.total === 0 ||
+      studentQuery.documents[0].status === "created"
+    ) {
+      // If no student found, return a message saying "You are not a student"
+      console.log("No Student Like Such", studentQuery, name);
+      return { error: "You are not a student" };
+    }
+    console.log("Student found🤍❤❤💛💛", studentQuery);
+
+    // Create the user account since the user exists in the "students" collection
     newUserAccount = await users.create(
       ID.unique(),
       email,
       phone,
       password,
-      `${firstName} ${lastName}`
+      namees
     );
 
     if (!newUserAccount) throw new Error("Error creating user");
@@ -81,7 +103,7 @@ export const signUp = async ({
       {
         phone,
         image,
-        name: `${firstName} ${lastName}`,
+        name: namees,
         userId: newUserAccount.$id,
         ...userData,
       }
@@ -95,16 +117,27 @@ export const signUp = async ({
       sameSite: "strict",
       secure: true,
     });
-
+    if (studentQuery.total !== 0 && newUser) {
+      const updatedStudent = await database.updateDocument(
+        DATABASE_ID!,
+        STUDENTS_COLLECTION_ID!,
+        studentQuery.documents[0].$id,
+        {
+          status: "created",
+        }
+      );
+    }
     return parseStringify(newUser);
   } catch (error) {
     console.error("Error during sign-up process:", error);
   }
 };
+
 export const logoutAccount = async () => {
   try {
     const { account } = await createSessionClient();
     (await cookies()).delete("PARTICLES");
+    (await cookies()).delete("PARTICLES_admin");
     await account.deleteSession("current");
   } catch (error) {
     console.log(error);
