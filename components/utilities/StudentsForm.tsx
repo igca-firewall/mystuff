@@ -3,6 +3,7 @@ import { generateStudentId } from "@/lib/utils";
 import React, { useState, useRef } from "react";
 import Select from "./CustomSelect";
 import { useUserContext } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 const StudentForm = () => {
   // Initial state for managing student details
@@ -21,7 +22,7 @@ const StudentForm = () => {
   const [isSuccess, setIsSuccess] = useState(false); // State for success popup
   const [isFailure, setIsFailure] = useState(false); // State for failure popup
   const [errorMessage, setErrorMessage] = useState(""); // State for storing error message
-
+ const router = useRouter()
   // Class options
   const classOptions = [
     "JSS1A",
@@ -92,7 +93,7 @@ const StudentForm = () => {
 
     setStudents(updatedStudents);
   };
- const {user} = useUserContext()
+  const { user } = useUserContext();
   // Handle keydown to go to the next field on Enter press
   const handleKeyDown = (
     e: React.KeyboardEvent,
@@ -196,6 +197,9 @@ const StudentForm = () => {
       setIsProcessing(false); // Reset processing state
     }
   };
+  const handleRoute = () => {
+    router.push("/")
+  }
 
   // Handle pagination navigation
   const goToNextPage = () => {
@@ -217,9 +221,8 @@ const StudentForm = () => {
   const closeFailurePopup = () => {
     setIsFailure(false);
   };
- {user.role === 'admin' ?
-//  return (
-   (
+  return user.role === "admin" ? (
+    //  return (
     <div className="p-6 bg-white shadow-lg rounded-lg max-w-7xl mx-auto">
       <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
         Student Registration Form
@@ -373,16 +376,24 @@ const StudentForm = () => {
         </div>
       </form>
     </div>
-  ): (
-    <div className="p-6 bg-white shadow-lg rounded-lg max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
-        You are not authorized to access this page. Please contact the admin.
-      </h1>
+  ) : (
+    <div className="flex items-center justify-center h-[50%]">
+      <div className="p-8 bg-white shadow-2xl rounded-xl max-w-lg mx-auto">
+        <h1 className="text-3xl font-extrabold text-center text-gray-800 mb-4">
+          Access Denied
+        </h1>
+        <p className="text-center text-gray-600 text-lg mb-6">
+          You are not authorized to access this page. Please contact the
+          administrator for assistance.
+        </p>
+        <div className="flex justify-center">
+          <button className="px-6 py-3 text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-md transition-transform transform hover:scale-105">
+            Go Back
+          </button>
+        </div>
+      </div>
     </div>
-  )
-
- }
- 
+  );
 };
 
 export default StudentForm;

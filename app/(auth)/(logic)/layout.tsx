@@ -1,26 +1,25 @@
+"use client"
 
-// import Image from "next/image";
+import { getMe } from "@/lib/actions/user.actions";
+import { redirect } from "next/navigation";
+import { useEffect } from "react";
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <main className="flex min-h-screen w-full justify-between font-inter">
-      {children}
-      {/* <DarkModeToggle/> */}
-      {/* <div className=" ">
-        <div>
-          <Image
-            src="icons/auth-image.svg"
-            alt="Auth image"
-            width={500}
-            height={500}
-            className=""
-          />
-        </div>
-      </div> */}
-    </main>
-  );
+  useEffect(() => {
+    const checkAuthentication = async () => {
+      const xed = await getMe(); // Assuming getMe is asynchronous
+      if (xed) {
+        redirect("/");
+      }
+    };
+  
+    checkAuthentication();
+  }, []);
+   // Empty dependency array ensures this runs only once, after the component mounts
+
+  return <main className="justify-center">{children}</main>;
 }

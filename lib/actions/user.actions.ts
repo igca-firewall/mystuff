@@ -9,7 +9,7 @@ const {
   APPWRITE_USER_COLLECTION_ID: USER_COLLECTION_ID,
   APPWRITE_ADMIN_COLLECTION_ID: ADMIN_COLLECTION_ID,
   APPWRITE_STUDENTS_COLLECTION_ID: STUDENTS_COLLECTION_ID,
-  PASSKEY:PASSKEY,
+  PASSKEY: PASSKEY,
 } = process.env;
 
 export const getUserInfo = async ({ userId }: getUserInfoProps) => {
@@ -39,7 +39,7 @@ export const getAdminInfo = async ({ userId }: getUserInfoProps) => {
       [Query.equal("userId", [userId])]
     );
     if (!user) {
-      console.log("User not found❌❌🛑❌",user,userId)
+      console.log("User not found❌❌🛑❌", user, userId);
       throw Error;
     }
 
@@ -66,6 +66,7 @@ export const signIn = async ({ email, password }: signInProps) => {
       httpOnly: true,
       sameSite: "strict",
       secure: true,
+      maxAge: 6 * 30 * 24 * 60 * 60 * 1000,
     });
 
     const user = await getUserInfo({ userId: session?.userId });
@@ -78,7 +79,6 @@ export const signIn = async ({ email, password }: signInProps) => {
     return null; // In case of any error, also return null
   }
 };
-
 
 export const signUp = async ({
   password,
@@ -132,10 +132,11 @@ export const signUp = async ({
         httpOnly: true,
         sameSite: "strict",
         secure: true,
+        maxAge: 6 * 30 * 24 * 60 * 60 * 1000,
       });
 
       const user = await getAdminInfo({ userId: session.userId });
-       console.log("User🧡🧡",session,user)
+      console.log("User🧡🧡", session, user);
       return parseStringify(user);
     }
 
@@ -234,7 +235,6 @@ export async function getLoggedInUser() {
   }
 }
 
-
 export async function getUserById(userId: string) {
   try {
     const { database } = await createAdminClient();
@@ -251,13 +251,12 @@ export async function getUserById(userId: string) {
 }
 export const getMe = async () => {
   try {
-    const akpi =
-      (await cookies()).get("PARTICLES_ADMINISTRATOR_IGCA") ||
-      (await cookies()).get("PARTICLES");
-    if (!akpi) {
-      return null;
+    const akpi = (await cookies()).get("PARTICLES_ADMINISTRATOR_IGCA");
+    const hello = (await cookies()).get("PARTICLES");
+    if (!akpi && !hello) {
+      return false;
     } else {
-      return parseStringify(akpi);
+      return true;
     }
   } catch (error) {
     throw error;
