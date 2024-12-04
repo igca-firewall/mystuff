@@ -117,13 +117,13 @@ const PostCard = ({ post, className = "" }: PostCardProps) => {
           {isExpanded || !isLongCaption ? (
             <div className="flex-col gap-6">
               <p>{post?.caption}</p>{" "}
-              <p className="text-orange-500">{post.tags}</p>
+              <p className="text-purple-500">{post.tags}</p>
             </div>
           ) : (
             truncatedCaption
           )}
           {isLongCaption && (
-            <span className="text-orange-500 cursor-pointer ml-1">
+            <span className="text-purple-500 cursor-pointer ml-1">
               {isExpanded ? "Show less" : "Read more"}
             </span>
           )}

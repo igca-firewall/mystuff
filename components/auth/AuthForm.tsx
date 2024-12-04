@@ -51,7 +51,7 @@ const AuthForm = ({
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      if (type === "sign-up" ) {
+      if (type === "sign-up") {
         const avatarUrl = generateAvatar(
           data.firstName || data.lastName || "User"
         );
@@ -65,6 +65,11 @@ const AuthForm = ({
             subject: data.subject,
             phone: data.phone,
           }),
+          ...(data.role === "admin" && {
+            adminContact: data.adminContact,
+            adminId: data.adminId,
+            adminCode: data.adminCode,
+          }),
           ...(data.role === "viewer" && {
             dob: data.dob,
             guardianContact: data.guardianContact,
@@ -76,7 +81,6 @@ const AuthForm = ({
         if (newUser) {
           console.log("User and scratch card created", newUser, scratchCard);
           form.reset();
-          storeSessionInLocalStorage();
           router.push("/");
         }
       } else if (type === "sign-in") {
@@ -86,23 +90,23 @@ const AuthForm = ({
         });
         if (response) {
           form.reset();
-          storeSessionInLocalStorage();
           router.push("/");
         }
-      } else if (role === "admin" && type === "sign-up") {
-        const response = await adminSignIn({
-          email: data.email,
-          password: data.password,
-          adminCode: data.adminCode!,
-          name: `${data.firstName} ${data.lastName}`,
-          adminId: data.adminId!,
-          adminContact: data.adminContact!,
-        });
-        if (response) {
-          form.reset();
-          storeSessionInLocalStorage();
-          router.push("/");
-        }
+        //  }
+        // else if (role === "admin" && type === "sign-up") {
+        //   const response = await adminSignIn({
+        //     email: data.email,
+        //     password: data.password,
+        //     adminCode: data.adminCode!,
+        //     name: `${data.firstName} ${data.lastName}`,
+        //     adminId: data.adminId!,
+        //     adminContact: data.adminContact!,
+        //   });
+        //   if (response) {
+        //     form.reset();
+        //     storeSessionInLocalStorage();
+        //     router.push("/");
+        //   }
       }
     } catch (error) {
       console.error("Error during authentication", error);

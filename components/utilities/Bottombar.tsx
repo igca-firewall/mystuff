@@ -18,7 +18,7 @@ const Bottombar = () => {
               <Link href={link.route}>
                 <div
                   className={`flex flex-col items-center justify-center gap-1 p-2 transition-all ${
-                    isActive  ? "text-orange-500" : "text-gray-400"
+                    isActive  ? "text-purple-500" : "text-gray-400"
                   }`}
                   aria-current={isActive ? "page" : undefined}
                 >

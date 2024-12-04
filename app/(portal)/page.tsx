@@ -1,11 +1,11 @@
 // pages/home.tsx
 "use client";
-import React, { } from "react";
+import React, { useEffect } from "react";
 
-
+import { getMe } from "@/lib/actions/user.actions";
 // import { dummyPosts } from "@/lib/utils";
 // import Link from "next/link";
-// import Image from "next/image";
+import { redirect } from "next/navigation";
 // import PostCard from "@/components/utilities/PostCard";
 // import InputForm from "@/components/utilities/ScoreSheet";
 // import StudentForm from "@/components/utilities/StudentsForm";
@@ -14,6 +14,16 @@ import PostCard from "@/components/utilities/PostCard";
 
 const Home = () => {
   // const [isSplashVisible, setIsSplashVisible] = useState(false); // State for splash screen visibility
+  useEffect(() => {
+    const checkAuthentication = async () => {
+      const xed = await getMe(); // Assuming getMe is asynchronous
+      if (!xed) {
+        return null
+      }
+    };
+
+    checkAuthentication();
+  }, []);
 
   // const {
   //   data: posts,
@@ -53,7 +63,7 @@ const Home = () => {
     <div className="flex xl:mr-32 md:mr-2">
       <div className="home-container">
         <div className="home-posts">
-          { (
+          {
             <ul className="flex flex-col gap-9 items-center justify-center w-full">
               {dummyPosts && dummyPosts.length > 0 ? (
                 dummyPosts.map((post: dummyPosts) => (
@@ -81,10 +91,10 @@ const Home = () => {
                 </div>
               )}
             </ul>
-          )}
+          }
         </div>
       </div>
-   {/* <StudentForm/> */}
+      {/* <StudentForm/> */}
       {/* <RightSideBar /> */}
     </div>
   );

@@ -1,6 +1,14 @@
 "use server";
 
-import { Client, Account, Databases, Users, Storage, Messaging, Avatars } from "node-appwrite";
+import {
+  Client,
+  Account,
+  Databases,
+  Users,
+  Storage,
+  Messaging,
+  Avatars,
+} from "node-appwrite";
 import { cookies } from "next/headers";
 
 interface AdminClient {
@@ -12,13 +20,15 @@ interface AdminClient {
   avatars: Avatars;
 }
 
-export async function createSessionClient(): Promise<{ account: Account, }> {
+export async function createSessionClient(): Promise<{ account: Account }> {
   const client = new Client()
     .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
     .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT!);
 
-  const session = (await cookies()).get("PARTICLES");
-  
+  const session =
+    (await cookies()).get("PARTICLES_ADMINISTRATOR_IGCA") ||
+    (await cookies()).get("PARTICLES");
+
   if (!session || !session.value) {
     throw new Error("No session");
   }
@@ -27,7 +37,6 @@ export async function createSessionClient(): Promise<{ account: Account, }> {
 
   return {
     account: new Account(client),
- 
   };
 }
 
@@ -41,14 +50,14 @@ export async function createAdminClient(): Promise<AdminClient> {
     account: new Account(client),
     database: new Databases(client),
     users: new Users(client),
-    
+
     storage: new Storage(client),
     messaging: new Messaging(client),
     avatars: new Avatars(client),
   };
-} 
+}
 // const permissions = [
-//   Permission.read(Role.any()),  
+//   Permission.read(Role.any()),
 //   Permission.create(Role.user("user")),
 //   // Anyone can view this document
 //   Permission.update(Role.team("writers")),       // Writers can update this document

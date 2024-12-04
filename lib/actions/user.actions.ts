@@ -7,7 +7,9 @@ import { cookies } from "next/headers";
 const {
   APPWRITE_DATABASE_ID: DATABASE_ID,
   APPWRITE_USER_COLLECTION_ID: USER_COLLECTION_ID,
+  APPWRITE_ADMIN_COLLECTION_ID: ADMIN_COLLECTION_ID,
   APPWRITE_STUDENTS_COLLECTION_ID: STUDENTS_COLLECTION_ID,
+  PASSKEY:PASSKEY,
 } = process.env;
 
 export const getUserInfo = async ({ userId }: getUserInfoProps) => {
@@ -27,9 +29,34 @@ export const getUserInfo = async ({ userId }: getUserInfoProps) => {
     console.log(error);
   }
 };
+export const getAdminInfo = async ({ userId }: getUserInfoProps) => {
+  try {
+    const { database } = await createAdminClient();
+
+    const user = await database.listDocuments(
+      DATABASE_ID!,
+      ADMIN_COLLECTION_ID!,
+      [Query.equal("userId", [userId])]
+    );
+    if (!user) {
+      console.log("User not found❌❌🛑❌",user,userId)
+      throw Error;
+    }
+
+    return parseStringify(user.documents[0]);
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 export const signIn = async ({ email, password }: signInProps) => {
   try {
+    // Check if the email is the restricted one
+    if (email === "tinahez3@gmail.com" || password === `${PASSKEY!}`) {
+      console.log("Email or password is restricted. Returning null.");
+      return null;
+    }
+
     const { account } = await createAdminClient();
     const session = await account.createEmailPasswordSession(email, password);
 
@@ -44,49 +71,78 @@ export const signIn = async ({ email, password }: signInProps) => {
     const user = await getUserInfo({ userId: session?.userId });
 
     // Store evidence of login in local storage
-
+    console.log("Administrator user💛💛❤❤", user);
     return parseStringify(user);
   } catch (error) {
     console.error("Error", error);
+    return null; // In case of any error, also return null
   }
 };
+
 
 export const signUp = async ({
   password,
   image,
-  phone,name,
+  phone,
+  name,
+  adminContact,
+  adminCode,
+  adminId,
+  dob,
+
   ...userData
 }: SignUpParams) => {
-  const { email,  } = userData;
-
-  let newUserAccount;
+  const { email } = userData;
 
   try {
     const { account, users, database } = await createAdminClient();
     const namees = name;
+
     // Check if the user is in the students collection
     const studentQuery = await database.listDocuments(
       DATABASE_ID!,
-      STUDENTS_COLLECTION_ID!, // Replace with the actual collection ID of the "students" collection
-      [
-        Query.equal("name", namees), // Use the phone or any other field for filtering
-        // You can add more fields to match if necessary
-        // Query.equal("email", email) // You can add more fields to match if necessary
-      ]
+      STUDENTS_COLLECTION_ID!,
+      [Query.equal("name", namees), Query.equal("dateOfBirth", dob || "")]
     );
 
-    if (
-      studentQuery.total === 0 ||
-      studentQuery.documents[0].status === "created"
-    ) {
-      // If no student found, return a message saying "You are not a student"
-      console.log("No Student Like Such", studentQuery, name);
-      return { error: "You are not a student" };
-    }
-    console.log("Student found🤍❤❤💛💛", studentQuery);
+    // If not a student, check if the user is an admin
+    if (studentQuery.total === 0) {
+      console.log("Student not found", studentQuery);
+      const adminQuery = await database.listDocuments(
+        DATABASE_ID!,
+        ADMIN_COLLECTION_ID!,
+        [
+          Query.equal("adminContact", adminContact || ""),
+          Query.equal("name", namees),
+          Query.equal("adminId", adminId || ""),
+          Query.equal("adminCode", adminCode || ""),
+        ]
+      );
 
-    // Create the user account since the user exists in the "students" collection
-    newUserAccount = await users.create(
+      if (adminQuery.total === 0) {
+        console.log("Admin not found", adminQuery);
+        return false;
+      }
+      console.log("admin found", adminQuery);
+      // Admin exists: Sign in
+      const session = await account.createEmailPasswordSession(email, password);
+
+      (await cookies()).set("PARTICLES_ADMINISTRATOR_IGCA", session.secret, {
+        path: "/",
+        httpOnly: true,
+        sameSite: "strict",
+        secure: true,
+      });
+
+      const user = await getAdminInfo({ userId: session.userId });
+       console.log("User🧡🧡",session,user)
+      return parseStringify(user);
+    }
+
+    // Student exists: Create account and update status
+    console.log("Student found:", studentQuery);
+
+    const newUserAccount = await users.create(
       ID.unique(),
       email,
       phone,
@@ -94,7 +150,7 @@ export const signUp = async ({
       namees
     );
 
-    if (!newUserAccount) throw new Error("Error creating user");
+    if (!newUserAccount) throw new Error("Error creating user account");
 
     const newUser = await database.createDocument(
       DATABASE_ID!,
@@ -105,6 +161,9 @@ export const signUp = async ({
         image,
         name: namees,
         userId: newUserAccount.$id,
+        adminContact,
+        adminCode,
+        adminId,
         ...userData,
       }
     );
@@ -117,19 +176,25 @@ export const signUp = async ({
       sameSite: "strict",
       secure: true,
     });
-    if (studentQuery.total !== 0 && newUser) {
-      const updatedStudent = await database.updateDocument(
-        DATABASE_ID!,
-        STUDENTS_COLLECTION_ID!,
-        studentQuery.documents[0].$id,
-        {
-          status: "created",
-        }
-      );
+
+    const updatedStudent = await database.updateDocument(
+      DATABASE_ID!,
+      STUDENTS_COLLECTION_ID!,
+      studentQuery.documents[0].$id,
+      {
+        status: "created",
+      }
+    );
+
+    if (!updatedStudent) {
+      console.log("Error updating student status");
+      return { error: "Error updating student status" };
     }
+
     return parseStringify(newUser);
   } catch (error) {
     console.error("Error during sign-up process:", error);
+    return { error: "An unexpected error occurred" };
   }
 };
 
@@ -137,7 +202,7 @@ export const logoutAccount = async () => {
   try {
     const { account } = await createSessionClient();
     (await cookies()).delete("PARTICLES");
-    (await cookies()).delete("PARTICLES_admin");
+    (await cookies()).delete("PARTICLES_ADMINISTRATOR_IGCA");
     await account.deleteSession("current");
   } catch (error) {
     console.log(error);
@@ -148,17 +213,28 @@ export async function getLoggedInUser() {
   try {
     const { account } = await createSessionClient();
     const result = await account.get();
-    if (!result) {
-      throw Error;
-    }
-    const xed = await getUserInfo({ userId: result.$id });
 
-    return parseStringify(xed);
+    if (!result) {
+      throw new Error("User session not found");
+    }
+
+    // Try to fetch user info
+    let userData = await getUserInfo({ userId: result.$id });
+
+    // If user info is not found, fetch admin info
+    if (!userData) {
+      userData = await getAdminInfo({ userId: result.$id });
+    }
+
+    // Parse and return the result, or null if no data is available
+    return userData ? parseStringify(userData) : null;
   } catch (error) {
-    console.error(error);
+    console.error("Error in getLoggedInUser:", error);
     return null;
   }
 }
+
+
 export async function getUserById(userId: string) {
   try {
     const { database } = await createAdminClient();
@@ -173,3 +249,17 @@ export async function getUserById(userId: string) {
     console.log(error);
   }
 }
+export const getMe = async () => {
+  try {
+    const akpi =
+      (await cookies()).get("PARTICLES_ADMINISTRATOR_IGCA") ||
+      (await cookies()).get("PARTICLES");
+    if (!akpi) {
+      return null;
+    } else {
+      return parseStringify(akpi);
+    }
+  } catch (error) {
+    throw error;
+  }
+};

@@ -16,7 +16,7 @@ const Logout = () => {
   };
 
   return (
-    <div>
+    <div className="cursor-pointer">
       <Image
         onClick={handleLogOut}
         src="icons/logout.svg"

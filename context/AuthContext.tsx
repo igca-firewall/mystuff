@@ -1,5 +1,5 @@
 "use client";
-import { getLoggedInUser } from "@/lib/actions/user.actions";
+import { getLoggedInUser, getMe } from "@/lib/actions/user.actions";
 import { redirect } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 
@@ -8,9 +8,11 @@ export const INITIAL_USER: User = {
   email: "",
   phone: "",
   userId: "",
-
+  adminCode: "",
+  adminContact: "",
+  adminId: "",
   name: "",
-
+  role: "",
   image: "",
 };
 
@@ -51,11 +53,13 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser({
           $id: currentAccount.$id,
           name: currentAccount.name,
-
+          adminCode: currentAccount.adminCode,
+          adminContact: currentAccount.adminContact,
+          adminId: currentAccount.adminId,
           email: currentAccount.email,
           phone: currentAccount.phone,
           userId: currentAccount.userId,
-
+          role: currentAccount.role,
           image: currentAccount.image,
         });
         setIsAuthenticated(true);
@@ -71,14 +75,18 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    if (
-      localStorage.getItem("cookieFall") === "[]" ||
-      localStorage.getItem("cookieFall") === null
-    )
-      redirect("/sign-in");
-
-    checkAuthUser();
+    const checkAuthentication = async () => {
+      const xed = await getMe(); // Assuming getMe is asynchronous
+      if (!xed) {
+        redirect("/sign-in");
+      } else {
+        await checkAuthUser(); // Assuming checkAuthUser is asynchronous
+      }
+    };
+  
+    checkAuthentication();
   }, []);
+  
 
   const value = {
     user,

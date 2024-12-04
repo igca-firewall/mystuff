@@ -2,6 +2,7 @@ import { inputStudentInfo } from "@/lib/actions/studentsData.actions";
 import { generateStudentId } from "@/lib/utils";
 import React, { useState, useRef } from "react";
 import Select from "./CustomSelect";
+import { useUserContext } from "@/context/AuthContext";
 
 const StudentForm = () => {
   // Initial state for managing student details
@@ -91,7 +92,7 @@ const StudentForm = () => {
 
     setStudents(updatedStudents);
   };
-
+ const {user} = useUserContext()
   // Handle keydown to go to the next field on Enter press
   const handleKeyDown = (
     e: React.KeyboardEvent,
@@ -216,8 +217,9 @@ const StudentForm = () => {
   const closeFailurePopup = () => {
     setIsFailure(false);
   };
-
-  return (
+ {user.role === 'admin' ?
+//  return (
+   (
     <div className="p-6 bg-white shadow-lg rounded-lg max-w-7xl mx-auto">
       <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
         Student Registration Form
@@ -371,7 +373,16 @@ const StudentForm = () => {
         </div>
       </form>
     </div>
-  );
+  ): (
+    <div className="p-6 bg-white shadow-lg rounded-lg max-w-7xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
+        You are not authorized to access this page. Please contact the admin.
+      </h1>
+    </div>
+  )
+
+ }
+ 
 };
 
 export default StudentForm;

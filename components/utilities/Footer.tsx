@@ -1,50 +1,51 @@
-"use client"
-// import { logoutAccount } from "@/lib/actions/user.actions";
-// import { LocalStorageManager } from "@/lib/utils";
-// import Image from "next/image";
-// import { redirect, useRouter } from "next/navigation";
+"use client";
 import React from "react";
-import Logout from "./Logout";
 import Image from "next/image";
 import Link from "next/link";
+import Logout from "./Logout";
 
 const Footer = ({ user, type = "desktop" }: FooterProps) => {
-  
   return (
-    <footer className=" py-3 px-2  ">
-      <div className="flex gap-2 ">
+    <footer className="py-3 px-2 md:px-1">
+      <div className="flex items-center gap-4 md:gap-2">
+        {/* User Image Section */}
         <div>
-        <Link href="/personalization">
-              <div className="flex items-center">
-                <div className="w-8 h-8 overflow-hidden rounded-full">
-                  <Image
-                    src={user.image }
-                    alt="User Image"
-                    width={38}
-                    height={38}
-                    className="w-8 h-8 rounded-full object-cover"
-                    layout="responsive"
-                    quality={100}
-                  />
-                </div>
+          <Link href="/personalization">
+            <div className="flex items-center">
+              <div className="w-10 h-10 overflow-hidden rounded-full">
+                <Image
+                  src={user.image ? user.image : "/images/th.jpg"}
+                  alt="User Image"
+                  width={40}
+                  height={40}
+                  className="w-10 h-10 rounded-full object-cover"
+                  layout="intrinsic"
+                  quality={100}
+                />
               </div>
-            </Link>
+            </div>
+          </Link>
         </div>
 
-        <div className=" flex ">
+        {/* User Info Section */}
+        <div className="flex flex-col justify-center">
           <div
             className={
               type === "mobile" ? "footer_email-mobile" : "footer_email"
             }
           >
-            <h1 className="text-[12px] truncate text-gray-700 dark:text-neutral-300 font-semibold">
-             {user?.name} 
+            <h1 className="text-sm font-semibold text-gray-700 dark:text-neutral-300 truncate">
+              {user?.name}
             </h1>
-            <p className="text-[10px] truncate font-normal dark:text-neutral-300 text-gray-600">
-              {user?.phone}
+            <p className="text-xs font-normal text-gray-600 dark:text-neutral-300 truncate">
+              {user?.phone || user.adminContact}
             </p>
-            <Logout/>
           </div>
+        </div>
+
+        {/* Logout Button */}
+        <div className="ml-auto">
+          <Logout />
         </div>
       </div>
     </footer>

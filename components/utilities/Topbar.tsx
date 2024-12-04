@@ -164,7 +164,7 @@ const Topbar: React.FC<xee> = ({ links}) => {
                   <Link href={item.route} key={item.label} className="relative">
                     <div
                       className={`flex items-center justify-center ${
-                        isActive ? "text-orange-500" : ""
+                        isActive ? "text-purple-500" : ""
                       }`}
                     >
                       <div className="relative w-12 h-12 flex items-center justify-center group">
@@ -189,7 +189,7 @@ const Topbar: React.FC<xee> = ({ links}) => {
                       </div>
                       {/* Notification dot for specific links */}
                       {item.hasNotification && (
-                        <div className="absolute top-0 right-0 w-3 h-3 bg-orange-500 rounded-full"></div>
+                        <div className="absolute top-0 right-0 w-3 h-3 bg-purple-500 rounded-full"></div>
                       )}
                     </div>
                   </Link>

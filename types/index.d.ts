@@ -50,9 +50,12 @@ interface User {
   email: string;
   name: string;
   userId: string;
-
+  adminId: string;
+  adminCode: string;
+  adminContact: string;
   firstName?: string;
   lastName?: string;
+  role: string;
   // name: string;
   // address1: string;
   // city: string;
