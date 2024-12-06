@@ -4,7 +4,7 @@ import { sidebarLinks } from "@/constants";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React from "react";
+import React, { useState, useRef } from "react";
 import Footer from "../utilities/Footer";
 import { useUserContext } from "@/context/AuthContext";
 import { Sheet, SheetTrigger, SheetContent } from '../ui/sheet';
@@ -14,19 +14,55 @@ const LeftSidebar = () => {
   const pathname = usePathname();
   const { user } = useUserContext();
 
+  const [isOpen, setIsOpen] = useState(false); // To track if sheet is open
+  const sheetRef = useRef<HTMLDivElement | null>(null);
+
+  // Variables to handle swipe gesture
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+
+  // Handle swipe start
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  // Handle swipe move
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  // Handle swipe end
+  const handleTouchEnd = () => {
+    if (touchStartX.current - touchEndX.current > 150) {
+      // Swiped left, close the sheet
+      setIsOpen(false);
+    } else if (touchEndX.current - touchStartX.current > 150) {
+      // Swiped right, open the sheet
+      setIsOpen(true);
+    }
+  };
+
   return (
     <div>
       {/* Sheet Component wrapping the Trigger */}
-      <Sheet>
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
         {/* Hamburger Button to trigger the Sheet */}
         <SheetTrigger asChild>
-          <button className="p-1  text-neutral-500 rounded-md focus:outline-none">
+          <button className="p-1 text-neutral-500 rounded-md focus:outline-none">
             <HiMenu size={30} />
           </button>
         </SheetTrigger>
 
         {/* Sheet Content that slides in from the right */}
-        <SheetContent position="right" size="lg" className="bg-gray-100 p-6 overflow-y-auto">
+        <SheetContent
+          ref={sheetRef}
+          position="right"
+          size="lg"
+          className="bg-gray-100 p-6 overflow-y-auto"
+          onTouchStart={handleTouchStart} 
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           {/* Sidebar Content */}
           <div className="flex flex-col h-full gap-6 px-4">
             <Link href="/" className="mb-8 cursor-pointer items-center gap-2">
