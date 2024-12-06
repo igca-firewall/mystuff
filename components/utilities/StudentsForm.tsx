@@ -22,7 +22,8 @@ const StudentForm = () => {
   const [isSuccess, setIsSuccess] = useState(false); // State for success popup
   const [isFailure, setIsFailure] = useState(false); // State for failure popup
   const [errorMessage, setErrorMessage] = useState(""); // State for storing error message
- const router = useRouter()
+  const router = useRouter();
+  const [completedSubmissions, setCompletedSubmissions] = useState(0);
   // Class options
   const classOptions = [
     "JSS1A",
@@ -47,7 +48,7 @@ const StudentForm = () => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 15;
 
   // Calculate paginated data
   const totalPages = Math.ceil(students.length / itemsPerPage);
@@ -65,9 +66,10 @@ const StudentForm = () => {
     return value
       .replace(/\s+/g, " ") // Replace multiple spaces with a single space
       .replace(/^(\s)/, "") // Remove any leading spaces
-      .replace(/(\s)(\S)/g, (match) => match.toUpperCase()) // Capitalize first letter after space
-      .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize first letter of each word
+      .replace(/\s(\S)/g, (match) => match.toLowerCase()) // Make letters lowercase after spaces
+      .replace(/\b\w/g, (match) => match.toUpperCase()); // Capitalize first letter of each word
   };
+
   // Add this helper function outside the component
   const resetStudentState = () =>
     Array(1000).fill({
@@ -150,7 +152,7 @@ const StudentForm = () => {
     setIsProcessing(true);
     setIsSuccess(false); // Reset before submission
     setIsFailure(false); // Reset before submission
-
+    setCompletedSubmissions(0);
     // let allSubmissionsSuccessful = true;
 
     try {
@@ -174,6 +176,7 @@ const StudentForm = () => {
           });
           if (submitted) {
             setStudents(resetStudentState());
+            setCompletedSubmissions((prev) => prev + 1);
             setIsSuccess(true); // All submissions were successful
             autoClosePopup(setIsSuccess); // Close success popup after 3 seconds
           } else {
@@ -198,8 +201,8 @@ const StudentForm = () => {
     }
   };
   const handleRoute = () => {
-    router.push("/")
-  }
+    router.push("/");
+  };
 
   // Handle pagination navigation
   const goToNextPage = () => {
@@ -250,7 +253,7 @@ const StudentForm = () => {
                   key={index}
                   className={`${
                     index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                  } hover:bg-blue-50 transition`}
+                  } hover:bg-purple-100 transition`}
                 >
                   <td className="px-4 py-2 text-gray-600 font-medium text-center">
                     {startIndex + index + 1}
@@ -371,7 +374,9 @@ const StudentForm = () => {
             className="bg-purple-500 text-gray-100  px-6 py-4 rounded-full"
             disabled={isProcessing}
           >
-            {isProcessing ? "Processing..." : "Submit"}
+            {isProcessing
+              ? `Processing: ${completedSubmissions} / ${students.length}`
+              : "Submit"}
           </button>
         </div>
       </form>

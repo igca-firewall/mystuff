@@ -134,3 +134,11 @@ export async function getStudentById(id: string) {
     console.log(error);
   }
 }
+export const listAllStudents = async () => {
+  const { database } = await createAdminClient();
+  const newStudentInfo = await database.listDocuments(
+    DATABASE_ID!,
+    STUDENTS_COLLECTION_ID!
+  );
+  return parseStringify(newStudentInfo.documents)
+};

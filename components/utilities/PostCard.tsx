@@ -1,5 +1,6 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+
+import { useEffect, useState } from "react";
 import { useUserContext } from "@/context/AuthContext";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,9 +13,6 @@ type PostCardProps = {
 
 const PostCard = ({ post, className = "" }: PostCardProps) => {
   const { user } = useUserContext();
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
-  const holdTimeout = useRef<NodeJS.Timeout | null>(null);
   const [localUserData, setLocalUserData] = useState<any>(null);
 
   useEffect(() => {
@@ -28,131 +26,83 @@ const PostCard = ({ post, className = "" }: PostCardProps) => {
 
   if (!post.creator) return null;
 
-  const toggleText = () => setIsExpanded(!isExpanded);
-
-  const isLongCaption = post?.caption.length > 250;
-  const truncatedCaption =
-    post.caption.slice(0, 250) + (isLongCaption ? "..." : "");
-
-  const handleLongPress = () => {
-    navigator.clipboard.writeText(post.caption).then(() => {
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 1500);
-    });
-  };
-
-  const handleTouchStart = () => {
-    holdTimeout.current = setTimeout(handleLongPress, 800);
-  };
-
-  const handleTouchEnd = () => {
-    if (holdTimeout.current) {
-      clearTimeout(holdTimeout.current);
-      holdTimeout.current = null;
-    }
-  };
+  const isCurrentUser = (user?.$id || localUserData?.$id) === post.creator.$id;
 
   return (
     <div
-      className={`post-card bg-neutral-200 dark:bg-neutral-800 ${className} rounded-lg p-4 shadow-md`}
-      onClick={toggleText}
-      onContextMenu={handleLongPress} // For right-click on desktop
-      onTouchStart={handleTouchStart} // For long press on mobile
-      onTouchEnd={handleTouchEnd}
-      onMouseDown={handleTouchStart}
-      onMouseUp={handleTouchEnd}
-      onMouseLeave={handleTouchEnd}
+      className={`post-card bg-white font-inter dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-lg overflow-hidden ${className}`}
     >
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-3">
-          <Link href={`/profile/${post.creator.$id}`}>
-            <div className="w-12 h-12 overflow-hidden rounded-full">
-              <Image
-                alt="Creator"
-                className="w-12 h-12 rounded-full object-cover"
-                src={post.creator.imageUrl || "/images/th.png"}
-                width={48}
-                height={48}
-                quality={100}
-                layout="responsive"
-              />
-            </div>
-          </Link>
-          <div className="flex flex-col">
-            <p className="font-semibold text-neutral-800 dark:text-neutral-200">
-              {post.creator.firstName} {post.creator.lastName}
-            </p>
-            <div className="flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-300">
-              <p>{multiFormatDateString(post.$createdAt)}</p>
-              <span>•</span>
-              <p>{post.location}</p>
-            </div>
-          </div>
-        </div>
-
-        {(user?.$id || localUserData?.$id) === post.creator.$id && (
-          <Link href={`/update-post/${post.$id}`}>
-            <div className="w-6 h-6 overflow-hidden">
-              <Image
-                width={20}
-                height={20}
-                alt="Edit"
-                src="/icons/edit.svg"
-                className="hover:opacity-75 transition-opacity duration-200"
-                layout="responsive"
-                quality={100}
-              />
-            </div>
-          </Link>
-        )}
-      </div>
-
-      {/* Caption section */}
-      <div className="py-4">
-        <div
-          className={`text-sm lg:text-base text-neutral-800 dark:text-neutral-200 ${
-            isExpanded ? "" : "line-clamp-2"
-          }`}
-        >
-          {isExpanded || !isLongCaption ? (
-            <div className="flex-col gap-6">
-              <p>{post?.caption}</p>{" "}
-              <p className="text-purple-500">{post.tags}</p>
-            </div>
-          ) : (
-            truncatedCaption
-          )}
-          {isLongCaption && (
-            <span className="text-purple-500 cursor-pointer ml-1">
-              {isExpanded ? "Show less" : "Read more"}
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Image section */}
-      <Link href={`/details/${post.$id}`}>
-        {post.imageUrl && (
-          <div className="w-90 h-100 overflow-hidden rounded-lg">
+      {/* Header */}
+      <div className="flex items-center p-4">
+        <Link href={`/profile/${post.creator.$id}`}>
+          <div className="w-14 h-14 rounded-full overflow-hidden mr-3">
             <Image
-              alt="Post image"
-              className="rounded-lg object-cover w-full max-w-full max-h-[600px]"
-              src={post.imageUrl}
-              width={1}
-              height={1}
-              quality={100}
-              layout="responsive"
-              loading="lazy"
+              src={post.creator.imageUrl || "/images/th.png"}
+              alt="Creator"
+              width={40}
+              height={40}
+              className="object-cover w-full h-full"
             />
           </div>
-        )}
-      </Link>
-
-      {isCopied && (
-        <div className="fixed bottom-12 left-1/2 transform -translate-x-1/2 bg-gray-200 dark:bg-gray-700 text-dark-200 dark:text-white px-5 py-4 text-xs rounded-full shadow-md">
-          Copied
+        </Link>
+        <div className="flex flex-col">
+          <Link href={`/profile/${post.creator.$id}`}>
+            <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+              {post.creator.firstName} {post.creator.lastName}
+            </p>
+          </Link>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            {multiFormatDateString(post.$createdAt)}
+          </p>
         </div>
+        {isCurrentUser && (
+          <div className="ml-auto">
+            <Link href={`/update-post/${post.$id}`}>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                Edit
+              </p>
+            </Link>
+          </div>
+        )}
+      </div>
+
+      {/* Image Section - Full Size, Curved Edges */}
+      {post.imageUrl && (
+         <div className="w-90 h-100 px-2 overflow-hidden rounded-lg">
+         <Image
+           alt="Post image"
+           className="rounded-lg object-cover w-full max-w-full max-h-[600px]"
+           src={post.imageUrl}
+           width={1}
+           height={1}
+           quality={100}
+           layout="responsive"
+           loading="lazy"
+         />
+       </div>
       )}
+
+      {/* Caption */}
+      <div className="p-4">
+        <p className="text-sm">
+          <span className="font-semibold text-neutral-800 dark:text-neutral-200">
+            {post.creator.firstName}:
+          </span>{" "}
+          {post.caption}
+        </p>
+        {post.tags && (
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
+            {post.tags}
+          </p>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="p-4 border-t border-neutral-300 dark:border-neutral-700">
+        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+          {post.location || "No location provided"}
+        </p>
+      </div>
     </div>
   );
 };

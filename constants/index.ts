@@ -37,11 +37,16 @@ export const sidebarLinks = [
   },
 
   {
-    imgURL: "/icons/game.png",
-    route: "/games",
-    label: "Games",
+    imgURL: "/icons/follow.svg",
+    route: "/registration",
+    label: "Registration",
   },
 
+  {
+    imgURL: "/icons/followers.svg",
+    route: "/all-students",
+    label: "Students",
+  },
   {
     imgURL: "/icons/market.svg",
     route: "/marketplace",

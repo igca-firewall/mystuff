@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -14,14 +14,11 @@ import {
 } from "@/lib/utils";
 import CustomFormField, { FormFieldType } from "../utilities/CustomInput";
 import Loader from "../utilities/Loader";
-import {
-  useSignIn,
-  useSignUp,
-  useAdminSignIn,
-} from "@/lib/react-query/queriesAndMutation";
+import { useSignIn, useSignUp } from "@/lib/react-query/queriesAndMutation";
 import { useRouter } from "next/navigation";
 import CustomRadio from "../utilities/CustomRoleRadio";
 import { createScratchCard } from "@/lib/actions/scratchCard.actions";
+import { listAllStudents } from "@/lib/actions/studentsData.actions";
 
 const AuthForm = ({
   type,
@@ -33,7 +30,7 @@ const AuthForm = ({
   const [isLoading, setIsLoading] = useState(false);
   const { mutateAsync: createUser } = useSignUp();
   const { mutateAsync: signUser } = useSignIn();
-  const { mutateAsync: adminSignIn } = useAdminSignIn();
+
   const formSchema = authFormSchema(type, role);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -44,6 +41,17 @@ const AuthForm = ({
       role: "viewer",
     },
   });
+  useEffect(() => {
+    const allStudents = async () => {
+      const xed = await listAllStudents(); // Assuming getMe is asynchronous
+      if (xed) {
+        console.log("list of  all students", xed);
+      } else {
+        console.log("No student found", xed)
+      }
+    };
+   allStudents();
+  }, []);
 
   const selectedRole = form.watch("role");
   const router = useRouter();
@@ -287,14 +295,17 @@ const AuthForm = ({
               className="flex items-center justify-center px-8 py-8 text-lg font-semibold text-white bg-purple-600 rounded-full hover:bg-purple-700 focus:outline-none"
             >
               {isLoading ? (
-                <div className="items-center flex gap-4">
-                  {" "}
+                <div className="flex items-center gap-4">
                   <Loader /> Loading...
                 </div>
               ) : type === "sign-in" ? (
                 "Sign In"
-              ) : (
+              ) : type === "sign-up" && role === "admin" ? (
+                "Sign in - Admin"
+              ) : type === "sign-up" ? (
                 "Sign Up"
+              ) : (
+                "Unknown Action"
               )}
             </Button>
           </div>
