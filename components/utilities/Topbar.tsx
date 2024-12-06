@@ -145,49 +145,7 @@ const Topbar: React.FC<xee> = ({ links}) => {
           </div>
 
           {/* Bordered Input Section */}
-          <div className="w-full mt-2">
-            <div className="border-2 border-gray-300 dark:border-gray-950 h-10 rounded-[10px] flex items-center justify-between px-2">
-              {links.map((item) => {
-                const isActive =
-                  pathname === item.route || pathname?.startsWith(item.route);
-
-                return (
-                  <Link href={item.route} key={item.label} className="relative">
-                    <div
-                      className={`flex items-center justify-center ${
-                        isActive ? "text-purple-500" : ""
-                      }`}
-                    >
-                      <div className="relative w-12 h-12 flex items-center justify-center group">
-                        <Image
-                          src={item.imgURL}
-                          alt={item.label}
-                          height={20}
-                          width={20}
-                          className={`transition-transform duration-1000 ease-in-out ${
-                            isActive
-                              ? "brightness-100"
-                              : "hover:scale-110 brightness-0 dark:invert-white hover:brightness-75"
-                          }`}
-                        />
-                        <span
-                          className={`absolute hidden top-1/2 z-30 left-full transform -translate-y-1/2 ml-2 opacity-100 group-hover:opacity-90 transition-opacity duration-1000 ease-in-out bg-neutral-200 dark:bg-gray-800 dark:text-white text-dark-200 text-xs rounded-full px-2 py-1 ${
-                            isActive ? "block animate-name-reveal" : "hidden"
-                          }`}
-                        >
-                          {item.label}
-                        </span>
-                      </div>
-                      {/* Notification dot for specific links */}
-                      {item.hasNotification && (
-                        <div className="absolute top-0 right-0 w-3 h-3 bg-purple-500 rounded-full"></div>
-                      )}
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
+  
         </div>
       </div>
     </>
