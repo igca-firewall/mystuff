@@ -52,7 +52,7 @@ const StudentList: React.FC = () => {
     const fetchStudents = async () => {
       try {
         setIsLoading(true);
-        const limit = 25;
+        const limit = 100; // Fetch 100 students per page
         const offset = (currentPage - 1) * limit;
 
         const xed: Models.Document[] = await listAllStudents();
@@ -64,12 +64,14 @@ const StudentList: React.FC = () => {
             dateOfBirth: student.dateOfBirth,
             studentId: student.studentId,
             classRoom: student.classRoom,
+            createdAt: student.$createdAt
           }));
 
           setStudents(transformedStudents);
         }
 
-        setTotalPages(Math.ceil(100 / limit));
+        // Assuming total count of students is 10000, we calculate total pages
+        setTotalPages(Math.ceil(10000 / limit));
       } catch (error) {
         console.error("Error fetching students:", error);
       } finally {
@@ -137,6 +139,18 @@ const StudentList: React.FC = () => {
   const cancelDelete = () => {
     setStudentToDelete(null);
     setIsModalOpen(false);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
   };
 
   return (
@@ -217,7 +231,7 @@ const StudentList: React.FC = () => {
                           <FaEdit />
                         </button>
                         <button
-                          className="text-red-500 hover:text-red-600 transition-all duration-200"
+                          className="text-red-600 hover:text-red-700 transition-all duration-200"
                           onClick={() => handleDelete(student.$id)}
                         >
                           <FaTrashAlt />
@@ -230,13 +244,35 @@ const StudentList: React.FC = () => {
           </table>
         </div>
 
-        <ConfirmationModal
-          isOpen={isModalOpen}
-          message="Are you sure you want to delete this student?"
-          onConfirm={confirmDelete}
-          onCancel={cancelDelete}
-        />
+        {/* Pagination */}
+        <div className="flex justify-between items-center mt-6">
+          <button
+            onClick={handlePreviousPage}
+            disabled={currentPage === 1}
+            className="px-4 py-2 text-sm text-gray-600 bg-gray-200 rounded-md disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <p className="text-sm text-gray-600">
+            Page {currentPage} of {totalPages}
+          </p>
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 text-sm text-gray-600 bg-gray-200 rounded-md disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+        message="Are you sure you want to delete this student?"
+      />
     </div>
   );
 };

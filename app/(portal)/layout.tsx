@@ -1,7 +1,7 @@
 import Bottombar from "@/components/utilities/Bottombar";
 import LeftSidebar from "@/components/utilities/LeftSidebar";
 import Topbar from "@/components/utilities/Topbar";
-import { home } from "@/constants";
+import {  sidebarLinks } from "@/constants";
 import AuthProvider from "@/context/AuthContext";
 
 export default async function RootLayout({
@@ -13,7 +13,7 @@ export default async function RootLayout({
     <main className="w-full h-full flex font-inter">
       <AuthProvider>
         {/* Fixed Left Sidebar */}
-        <Topbar links={home} />
+        <Topbar links={sidebarLinks} />
         <aside className="fixed top-0 left-0 h-full w-[250px]">
           {/* Adjust width as needed */}
           <LeftSidebar />

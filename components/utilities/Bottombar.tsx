@@ -9,7 +9,7 @@ const Bottombar = () => {
   const pathname = usePathname();
 
   return (
-    <nav className="bottom-0 z-[70px] md:hidden  xl:hidden flex justify-between w-full sticky rounded-t-2xl bg-neutral-200 dark:bg-neutral-800 px-2 shadow-lg">
+    <nav className="bottom-0 z-[70px] md:hidden  xl:hidden flex justify-between w-full fixed rounded-t-2xl bg-neutral-200 dark:bg-neutral-800 px-2 shadow-lg">
       <ul className="flex justify-around w-full">
         {bottombarLinks.map((link) => {
           const isActive = pathname === link.route;

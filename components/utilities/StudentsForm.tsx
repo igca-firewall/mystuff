@@ -133,6 +133,11 @@ const StudentForm = () => {
   ) => {
     setTimeout(() => setState(false), 3000);
   };
+  const isValidStudent = (student: (typeof students)[0]) =>
+    student.fullName.trim() &&
+    student.dateOfBirth.trim() &&
+    student.parentInfo.trim();
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -214,6 +219,7 @@ const StudentForm = () => {
   };
 
   // Open the modal for confirmation
+  const populated = students.filter(isValidStudent);
 
   // Close the success popup
   const closeSuccessPopup = () => {
@@ -375,7 +381,7 @@ const StudentForm = () => {
             disabled={isProcessing}
           >
             {isProcessing
-              ? `Processing: ${completedSubmissions} / ${students.length}`
+              ? `Processing: ${completedSubmissions} / ${populated.length}`
               : "Submit"}
           </button>
         </div>

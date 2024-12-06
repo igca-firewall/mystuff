@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   title: "IGCA Portal",
   description: "School portal built under the IGCA firewall powered by Particles",
   icons: {
-    icon: "/window.svg",
+    icon: "/images/logo.jpg",
   },
 };
 
