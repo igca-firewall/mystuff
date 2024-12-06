@@ -20,7 +20,7 @@ const LeftSidebar = () => {
       <Sheet>
         {/* Hamburger Button to trigger the Sheet */}
         <SheetTrigger asChild>
-          <button className="p-3  text-neutral-500 rounded-md focus:outline-none">
+          <button className="p-1  text-neutral-500 rounded-md focus:outline-none">
             <HiMenu size={30} />
           </button>
         </SheetTrigger>
