@@ -4,7 +4,7 @@ import { sidebarLinks } from "@/constants";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Footer from "../utilities/Footer";
 import { useUserContext } from "@/context/AuthContext";
 import { Sheet, SheetTrigger, SheetContent } from '../ui/sheet';
@@ -41,6 +41,11 @@ const LeftSidebar = () => {
       setIsOpen(true);
     }
   };
+
+  // Close sidebar on pathname change
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
 
   return (
     <div>
