@@ -24,6 +24,7 @@ const StudentForm = () => {
   const [errorMessage, setErrorMessage] = useState(""); // State for storing error message
   const router = useRouter();
   const [completedSubmissions, setCompletedSubmissions] = useState(0);
+  const [total, setTotal] = useState(0);
   // Class options
   const classOptions = [
     "JSS1A",
@@ -141,25 +142,25 @@ const StudentForm = () => {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     const isValidStudent = (student: (typeof students)[0]) =>
       student.fullName.trim() &&
       student.dateOfBirth.trim() &&
       student.parentInfo.trim();
-
+  
     const populatedStudents = students.filter(isValidStudent);
-
+  
     if (!populatedStudents.length) {
       alert("No valid student data found!");
       return;
     }
-
+  
+    setTotal(populatedStudents.length);
     setIsProcessing(true);
     setIsSuccess(false); // Reset before submission
     setIsFailure(false); // Reset before submission
     setCompletedSubmissions(0);
-    // let allSubmissionsSuccessful = true;
-
+  
     try {
       const expirationTime = new Date();
       expirationTime.setFullYear(expirationTime.getFullYear() + 6);
@@ -167,7 +168,10 @@ const StudentForm = () => {
         .toISOString()
         .split(".")[0]
         .replace("T", " ");
-
+  
+      // Keep track of updated students after submission
+      const updatedStudents = [...students];
+  
       // Submit each student data individually and check each result
       for (const student of populatedStudents) {
         try {
@@ -179,32 +183,43 @@ const StudentForm = () => {
             expirationTime: formattedExpirationTime,
             studentId: `IGCA/ETCHE/${generateStudentId()}${generateStudentId()}`,
           });
+  
           if (submitted) {
-            setStudents(resetStudentState());
             setCompletedSubmissions((prev) => prev + 1);
-            setIsSuccess(true); // All submissions were successful
+            setIsSuccess(true); // Show success popup for this submission
             autoClosePopup(setIsSuccess); // Close success popup after 3 seconds
+  
+            // Remove successfully submitted student from updatedStudents
+            const index = updatedStudents.findIndex(
+              (s) => s.fullName === student.fullName
+            );
+            if (index !== -1) {
+              updatedStudents.splice(index, 1);
+            }
           } else {
-            setIsFailure(true); // Some submissions failed
+            setIsFailure(true); // Handle individual failure
             autoClosePopup(setIsFailure); // Close failure popup after 3 seconds
           }
         } catch (studentError) {
           console.error("Error submitting student:", studentError);
-          // allSubmissionsSuccessful = false; // If any submission fails, mark as failure
-          break; // Stop the loop if one submission fails
+          setIsFailure(true);
+          autoClosePopup(setIsFailure); // Close failure popup after 3 seconds
+          break; // Stop processing further students if an error occurs
         }
       }
+  
+      // Update the student list with only unsubmitted students
+      setStudents(updatedStudents);
     } catch (error) {
       console.error("Error in the process:", error);
-      setErrorMessage(
-        "An error occurred while submitting student information."
-      );
+      setErrorMessage("An error occurred while submitting student information.");
       setIsFailure(true); // Handle any other errors
       autoClosePopup(setIsFailure); // Close failure popup after 3 seconds
     } finally {
       setIsProcessing(false); // Reset processing state
     }
   };
+  
   const handleRoute = () => {
     router.push("/");
   };
@@ -230,6 +245,27 @@ const StudentForm = () => {
   const closeFailurePopup = () => {
     setIsFailure(false);
   };
+
+  if (!user) 
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white">
+      <div className="flex flex-col items-center gap-6">
+        {/* Animated Spinner */}
+        <div className="w-20 h-20 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+        
+        {/* Anticipation Message */}
+        <h1 className="text-2xl font-semibold animate-pulse"> 
+          We're preparing something amazing for you...
+        </h1>
+
+        {/* Subtle Progress Indicator */}
+        <p className="text-sm opacity-80">
+          Hang tight! This won't take long.
+        </p>
+      </div>
+    </div>
+    )
+  
   return user.role === "admin" ? (
     //  return (
     <div className="p-6 bg-white shadow-lg rounded-lg max-w-7xl mx-auto">
@@ -381,7 +417,7 @@ const StudentForm = () => {
             disabled={isProcessing}
           >
             {isProcessing
-              ? `Processing: ${completedSubmissions} / ${populated.length}`
+              ? `Processing: ${completedSubmissions} / ${total}`
               : "Submit"}
           </button>
         </div>

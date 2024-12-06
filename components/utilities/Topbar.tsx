@@ -6,6 +6,7 @@ import React from "react";
 // import { decryptKey } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import SheetComponent from "./Sheet";
 
 interface LinkItem {
   route: string;
@@ -98,17 +99,7 @@ const Topbar: React.FC<xee> = ({ links}) => {
         <div className="flex flex-col items-center justify-between px-4 py-2">
           {/* Top Row: Hamburger menu and profile */}
           <div className="flex justify-between items-center w-full">
-            <Link href="/menu" className="w-6 h-6 overflow-hidden">
-              <Image
-                alt="Menu"
-                src="/icons/hamburger.svg"
-                width={30}
-                height={30}
-                layout="responsive"
-                quality={100}
-                className="dark:invert"
-              />
-            </Link>
+           <SheetComponent/>
             <div className="w-[180px] h-full max-h-20 md:hidden max-lg:block xl:block justify-center">
               <Image
                 src="/images/particles.png"
