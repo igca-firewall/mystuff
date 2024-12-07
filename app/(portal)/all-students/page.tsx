@@ -52,7 +52,7 @@ const StudentList: React.FC = () => {
     const fetchStudents = async () => {
       try {
         setIsLoading(true);
-        const limit = 100; // Fetch 100 students per page
+        const limit = 10; // Fetch 100 students per page
         const offset = (currentPage - 1) * limit;
 
         const xed: Models.Document[] = await listAllStudents();
@@ -64,14 +64,13 @@ const StudentList: React.FC = () => {
             dateOfBirth: student.dateOfBirth,
             studentId: student.studentId,
             classRoom: student.classRoom,
-            createdAt: student.$createdAt
+            createdAt: student.$createdAt,
           }));
-
+          setTotalPages(Math.ceil(xed.length / limit));
           setStudents(transformedStudents);
         }
 
         // Assuming total count of students is 10000, we calculate total pages
-        setTotalPages(Math.ceil(10000 / limit));
       } catch (error) {
         console.error("Error fetching students:", error);
       } finally {
@@ -156,7 +155,9 @@ const StudentList: React.FC = () => {
   return (
     <div className="w-full h-full bg-gray-50 p-6 sm:p-8 flex flex-col">
       <div className="flex flex-col flex-1 bg-white p-6 rounded-xl shadow-lg">
-        <h1 className="text-3xl font-semibold text-gray-800 mb-6">Student List</h1>
+        <h1 className="text-3xl font-semibold text-gray-800 mb-6">
+          Student List
+        </h1>
 
         {/* Search and Sort Section */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
@@ -175,7 +176,9 @@ const StudentList: React.FC = () => {
             <select
               className="border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 focus:ring-2 focus:ring-purple-500"
               value={sortOption}
-              onChange={(e) => setSortOption(e.target.value as "name" | "class")}
+              onChange={(e) =>
+                setSortOption(e.target.value as "name" | "class")
+              }
             >
               <option value="name">Name (A-Z)</option>
               <option value="class">Class Order</option>

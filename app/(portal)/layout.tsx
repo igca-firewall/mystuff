@@ -1,4 +1,4 @@
-import Bottombar from "@/components/utilities/Bottombar";
+
 import LeftSidebar from "@/components/utilities/LeftSidebar";
 import Topbar from "@/components/utilities/Topbar";
 import {  sidebarLinks } from "@/constants";
@@ -24,7 +24,7 @@ export default async function RootLayout({
           <aside className="hidden md:block xl:block fixed bottom-24 left-4 z-50">
             {/* <DarkModeToggle /> */}
           </aside>
-          <Bottombar />
+     
         </div>
       </AuthProvider>
     </main>

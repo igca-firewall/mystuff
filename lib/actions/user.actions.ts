@@ -52,7 +52,11 @@ export const getAdminInfo = async ({ userId }: getUserInfoProps) => {
 export const signIn = async ({ email, password }: signInProps) => {
   try {
     // Check if the email is the restricted one
-    if (email === "tinahez3@gmail.com" || email === "okpeekoma@gmail.com" || password === `${PASSKEY!}`) {
+    if (
+      email === "tinahez3@gmail.com" ||
+      email === "okpeekoma@gmail.com" ||
+      password === `${PASSKEY!}`
+    ) {
       console.log("Email or password is restricted. Returning null.");
       return null;
     }
@@ -234,7 +238,6 @@ export async function getLoggedInUser() {
     return null;
   }
 }
-
 export async function getUserById(userId: string) {
   try {
     const { database } = await createAdminClient();

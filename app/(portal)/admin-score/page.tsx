@@ -1,8 +1,8 @@
 import React from 'react'
-
+import InputForm from "@/components/utilities/ScoreSheet"
 const AddScore = () => {
   return (
-    <div>AddScore</div>
+    <div><InputForm/></div>
   )
 }
 

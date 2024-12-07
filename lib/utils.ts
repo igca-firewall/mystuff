@@ -654,3 +654,36 @@ export const generateStudentId = (length = 3): string => {
     characters.charAt(Math.floor(Math.random() * characters.length))
   ).join("");
 };
+export const subjects = [
+  "English Language",
+  "Mathematics",
+  "Physics",
+  "Chemistry",
+  "Biology",
+  "Computer Science",
+  "Economics",
+  "Business Studies",
+  "History",
+  "Geography",
+  "Art & Design",
+  "Physical Education",
+  "Foreign Language (French, Spanish)",
+  "Religious Studies",
+  "Design & Technology",
+  "Music",
+];
+
+export const classOrder = [
+  "JSS1A",
+  "JSS1B",
+  "JSS2A",
+  "JSS2B",
+  "JSS3A",
+  "JSS3B",
+  "SS1A",
+  "SS1B",
+  "SS2-Science",
+  "SS2-Arts",
+  "SS3-Science",
+  "SS3-Arts",
+];

@@ -58,8 +58,8 @@ export const sidebarLinks = [
     label: "Wallet",
   },
   {
-    imgURL: "/icons/plus.svg",
-    route: "/create-posts",
+    imgURL: "/icons/add-post.svg",
+    route: "/create-post",
     label: "Publish",
   },
 ];

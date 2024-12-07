@@ -91,6 +91,11 @@ declare type IUpdateUser = {
   imageUrl: URL | string;
   file: FormData | undefined;
 };
+declare type ResultParams = {
+  classRoom: string;
+  term: string;
+  id: string;
+};
 interface Helper {
   user: User;
   file?: FormData;
