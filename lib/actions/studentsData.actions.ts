@@ -123,13 +123,17 @@ export const deleteStudent = async ({ id }: { id: string }) => {
 export async function getStudentById(id: string) {
   try {
     const { database } = await createAdminClient();
-    const result = await database.getDocument(
+    const result = await database.listDocuments(
       DATABASE_ID!,
       STUDENTS_COLLECTION_ID!,
-      id
+      [Query.equal("studentId", id)]
     );
-
-    return parseStringify(result);
+ if(!result){
+   console.log("No student found with this ID.");
+   return null;
+ }
+ console.log("the student found with this ID:", result.documents)
+    return parseStringify(result.documents[0]);
   } catch (error) {
     console.log(error);
   }

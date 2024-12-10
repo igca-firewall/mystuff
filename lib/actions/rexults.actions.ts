@@ -24,14 +24,14 @@ export const fetchResult = async ({ classRoom, id, term }: ResultParams) => {
   const result = await database.listDocuments(DATABASE_ID!, RESULTS_ID!, [
     Query.equal("studentId", id),
     Query.equal("classRoom", classRoom),
-    Query.equal("term", term),
+    // Query.equal("term", term),
   ]);
   if (!result) {
     console.log("No results found:", result);
-    return false
+    return false;
   }
   console.log("Result retrieved Successfully 😁😁😁", result);
-  return parseStringify(result.documents[0]);
+  return parseStringify(result.documents);
 };
 
 export const updateResults = async ({
@@ -59,7 +59,7 @@ export const updateResults = async ({
   const updatedResults = await database.updateDocument(
     DATABASE_ID!,
     RESULTS_ID!,
-    fetchedToUpdate.$id,
+    fetchedToUpdate[0].$id,
     {
       scores,
     }
@@ -74,36 +74,46 @@ export const updateResults = async ({
   console.log("Updated results", updatedResults);
 };
 
-export const uploadResults =  async({
+export const uploadResults = async ({
   id,
   scores,
   classRoom,
   term,
+  grade,
+  createdBy,
+  subject,
+  total
 }: {
   id: string;
   scores: string[];
   classRoom: string;
   term: string;
+  grade: string;
+  createdBy: string;
+  subject: string;
+  total: string;
 }) => {
-  const {database} =  await createAdminClient()
-
-
+  const { database } = await createAdminClient();
 
   const upload = await database.createDocument(
     DATABASE_ID!,
     RESULTS_ID!,
     ID.unique(),
     {
-      studentId : id,
+      studentId: id,
       scores,
       classRoom,
       term,
+      grade,
+      createdBy,
+      subject,
+      total,
     }
-  )
+  );
   if (!upload) {
     console.log("Error uploading results", upload);
     return false;
   }
   console.log("Results uploaded successfully", upload);
-  return parseStringify(upload)
+  return parseStringify(upload);
 };
