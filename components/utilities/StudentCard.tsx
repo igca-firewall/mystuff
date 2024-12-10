@@ -25,10 +25,12 @@ const ResultCard: React.FC<ResultCardProps> = ({
   additionalInfo,
 }) => {
   return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-xl font-bold mb-4">Student: {studentName}</h2>
-      <p className="text-sm text-gray-600 mb-2">ID: {studentId}</p>
-      <p className="text-sm text-gray-600 mb-4">Class: {classRoom}</p>
+    <div className="bg-white shadow-lg rounded-lg p-6">
+      <div className="border-b pb-4 mb-4">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">{studentName}</h2>
+        <p className="text-sm text-gray-600">ID: {studentId}</p>
+        <p className="text-sm text-gray-600">Class: {classRoom}</p>
+      </div>
 
       {additionalInfo && (
         <div className="mb-4">
@@ -46,38 +48,40 @@ const ResultCard: React.FC<ResultCardProps> = ({
         </div>
       )}
 
-      {grades?.map((gradeDocument, index) => (
-        <div key={index} className="mb-6">
-          <h3 className="text-lg font-semibold mb-2">
-            Term: {gradeDocument?.term} | Grade: {gradeDocument?.grade}
-          </h3>
+      <div className="mb-6">
+        {grades.map((gradeDocument, index) => (
+          <div key={index} className="mb-6">
+            <h3 className="text-xl font-semibold mb-3">
+              Term: {gradeDocument.term} | Grade: {gradeDocument.grade}
+            </h3>
 
-          <table className="w-full border-collapse border border-gray-300 mb-4">
-            <thead>
-              <tr>
-                <th className="border border-gray-300 p-2 text-left">Subject</th>
-                {Object.keys(gradeDocument.subjects).map((subject) => (
-                  <th key={subject} className="border border-gray-300 p-2 text-center">
-                    {subject}
-                  </th>
-                ))}
-                <th className="border border-gray-300 p-2 text-center">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className="border border-gray-300 p-2">Scores</td>
-                {Object.values(gradeDocument.subjects).map((score, index) => (
-                  <td key={index} className="border border-gray-300 p-2 text-center">
-                    {score}
-                  </td>
-                ))}
-                <td className="border border-gray-300 p-2 text-center">{gradeDocument.sum}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      ))}
+            <table className="w-full border-collapse table-auto">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border border-gray-300 p-2 text-left">Subject</th>
+                  {Object.keys(gradeDocument.subjects).map((subject) => (
+                    <th key={subject} className="border border-gray-300 p-2 text-center">
+                      {subject}
+                    </th>
+                  ))}
+                  <th className="border border-gray-300 p-2 text-center">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-gray-300 p-2">Scores</td>
+                  {Object.values(gradeDocument.subjects).map((score, index) => (
+                    <td key={index} className="border border-gray-300 p-2 text-center">
+                      {score}
+                    </td>
+                  ))}
+                  <td className="border border-gray-300 p-2 text-center">{gradeDocument.sum}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

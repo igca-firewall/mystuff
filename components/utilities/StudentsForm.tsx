@@ -29,16 +29,23 @@ const StudentForm = () => {
   const classOptions = [
     "JSS1A",
     "JSS1B",
+    "JSS1C",
     "JSS2A",
     "JSS2B",
+    "JSS2C",
     "JSS3A",
     "JSS3B",
+    "JSS3C",
     "SS1A",
     "SS1B",
-    "SS2-Science",
-    "SS2-Arts",
-    "SS3-Science",
-    "SS3-Arts",
+    "SS1C",
+    "SS2A",
+    "SS2B",
+    "SS2C",
+    "SS3A",
+    "SS3B",
+    "SS3C",
+    
   ];
 
   // Transform the array into an array of Option objects

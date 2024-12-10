@@ -94,7 +94,7 @@ declare type IUpdateUser = {
 declare type ResultParams = {
   classRoom: string;
   term: string;
-  id: string;
+  id?: string;
 };
 interface Helper {
   user: User;

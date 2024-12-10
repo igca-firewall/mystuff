@@ -14,7 +14,7 @@ const {
   APPWRITE_RESULT_COLLECTION_ID: RESULTS_ID,
   //     APPWRITE_USER_COLLECTION_ID: USER_COLLECTION_ID,
   //     APPWRITE_TRANSACTION_COLLECTION_ID: TRANSACTIONS_ID,
-  //     APPWRITE_CLASS_COLLECTION_ID: CLASSES,
+       APPWRITE_SCORES_COLLECTION_ID: SCORES_ID,
   //     APPWRITE_SCRATCHCARD_COLLECTION_ID: SCRATCHCARD_COLLECION_ID,
   // APPWRITE_SUBJECT_COLLECTION_ID: SUBJECTS_ID,
 } = process.env;
@@ -22,7 +22,7 @@ const {
 export const fetchResult = async ({ classRoom, id, term }: ResultParams) => {
   const { database } = await createAdminClient();
   const result = await database.listDocuments(DATABASE_ID!, RESULTS_ID!, [
-    Query.equal("studentId", id),
+    Query.equal("studentId", id  || ""),
     Query.equal("classRoom", classRoom),
     // Query.equal("term", term),
   ]);
@@ -78,6 +78,13 @@ export const uploadResults = async ({
   id,
   scores,
   classRoom,
+  firstTest,
+  secondTest,
+  project,
+  bnb,
+  assignment,
+  exam,
+  result,
   term,
   grade,
   createdBy,
@@ -92,8 +99,31 @@ export const uploadResults = async ({
   createdBy: string;
   subject: string;
   total: string;
+  firstTest: string;
+  secondTest: string;
+  project: string;
+  bnb: string;
+  assignment: string;
+  exam: string;
+  result: string;
 }) => {
   const { database } = await createAdminClient();
+const SID = ID.unique()
+
+const uploadScores = await database.createDocument(
+  DATABASE_ID!,
+  SCORES_ID!,
+  SID,
+  {
+    firstTest,
+    secondTest,
+    project,
+    bnb,
+    assignment,
+    exam,
+    result,
+  }
+)
 
   const upload = await database.createDocument(
     DATABASE_ID!,
@@ -101,7 +131,7 @@ export const uploadResults = async ({
     ID.unique(),
     {
       studentId: id,
-      scores,
+      scores : uploadScores.$id,
       classRoom,
       term,
       grade,
