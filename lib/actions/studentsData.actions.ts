@@ -141,7 +141,7 @@ export async function getStudentById(id: string) {
 export const listAllStudents = async () => {
   const { database } = await createAdminClient();
   
-  const limit = 100;             // Max number of documents per page
+  const limit = 1000;             // Max number of documents per page
   const maxRecords = 10000;      // Maximum number of students to fetch (10,000 students in this case)
   let allStudents: any[] = [];   // Array to hold all fetched students
   let offset = 0;                // Start from the first document

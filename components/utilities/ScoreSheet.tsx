@@ -72,51 +72,81 @@ const SubjectResultUploader: React.FC = () => {
   // Handle form submission
   const handleSubmit = async () => {
     if (!validateForm()) return;
-
+  
     setIsProcessing(true);
+    const uploadErrors: string[] = [];
+  
     try {
       for (const result of results) {
-        const agbai = await uploadResults({
+        // Destructure grades to map them to respective fields
+        const [firstTest, secondTest, project, bnb, assignment, exam] =
+          result.grades;
+  
+        // Prepare the result data for the upload
+        const uploadData = {
           id: result.studentId,
-          scores: result.grades,
-          classRoom: classRoom,
-          term: term,
+          firstTest: firstTest || "0",
+          secondTest: secondTest || "0",
+          project: project || "0",
+          bnb: bnb || "0",
+          assignment: assignment || "0",
+          exam: exam || "0",
+          result: `${result.sum}`,
+          classRoom,
+          term,
           grade: result.grade,
-          subject: subject,
+          subject,
           createdBy: user.$id,
-          total : `${result.sum}`
-        });
-        if (!agbai) {
-          console.log("Could not upload student ", agbai);
-          return false;
+          total: `${result.sum}`,
+        };
+  
+        try {
+          // Call the uploadResults function
+          const uploadResponse = await uploadResults(uploadData);
+  
+          if (!uploadResponse) {
+            throw new Error(`Failed to upload result for ${result.studentName}`);
+          }
+        } catch (error) {
+          console.error(`Error uploading result for ${result.studentName}:`, error);
+          uploadErrors.push(result.studentName);
         }
       }
-      console.log("Results uploaded successfully");
-      setClassRoom(classRoom);
-      setSubject(subject);
-      setTerm("1st Term");
-      setResults([]);
+  
+      if (uploadErrors.length > 0) {
+        setErrors([
+          ...errors,
+          `Failed to upload results for: ${uploadErrors.join(", ")}`,
+        ]);
+      } else {
+        console.log("All results uploaded successfully.");
+        setClassRoom("");
+        setSubject("");
+        setTerm("");
+        setResults([]);
+      }
     } catch (error) {
-      console.error("Error uploading results:", error);
+      console.error("Unexpected error during submission:", error);
       setErrors((prev) => [
         ...prev,
-        "Failed to upload results. Please try again.",
+        "An unexpected error occurred. Please try again.",
       ]);
     } finally {
       setIsProcessing(false);
     }
   };
+  
 
   // Handle adding results for a student
   const handleAddResult = (studentId: string, grades: string[]) => {
     if (grades.some((grade) => grade.trim() === "")) {
       setErrors((prevErrors) => [
         ...prevErrors,
-        "Please enter grades for all subjects.",
+        "Please enter all test scores for the student.",
       ]);
       return;
     }
-
+  
     const student = students.find((student) => student.studentId === studentId);
     if (student) {
       const sum = grades.reduce(
@@ -124,12 +154,12 @@ const SubjectResultUploader: React.FC = () => {
         0
       );
       const grade = calculateGrade(sum);
-
+  
       const updatedResults = [...results];
       const existingResultIndex = updatedResults.findIndex(
         (result) => result.studentId === studentId
       );
-
+  
       if (existingResultIndex !== -1) {
         updatedResults[existingResultIndex] = {
           ...updatedResults[existingResultIndex],
@@ -146,11 +176,11 @@ const SubjectResultUploader: React.FC = () => {
           grade,
         });
       }
-
+  
       setResults(updatedResults);
     }
   };
-
+  
   useEffect(() => {
     const fetchStudents = async () => {
       try {
@@ -221,7 +251,7 @@ const SubjectResultUploader: React.FC = () => {
             value={classRoom}
             onChange={(value) => setClassRoom(value)}
             placeholder="Choose a Class"
-            className="w-full border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-pink-500 focus:border-pink-500"
+            className="w-full border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-purple-500 focus:border-purple-500"
           />
         </div>
 
@@ -243,7 +273,7 @@ const SubjectResultUploader: React.FC = () => {
             value={subject}
             onChange={(value) => setSubject(value)}
             placeholder="Choose a Subject"
-            className="w-full border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-pink-500 focus:border-pink-500"
+            className="w-full border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-purple-500 focus:border-purple-500"
           />
         </div>
 
@@ -263,99 +293,108 @@ const SubjectResultUploader: React.FC = () => {
             value={term}
             onChange={(value) => setTerm(value)}
             placeholder="Choose a Term"
-            className="w-full border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-pink-500 focus:border-pink-500"
+            className="w-full border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-purple-500 focus:border-purple-500"
           />
         </div>
       </div>
 
       {/* Student Result Table */}
-      <div className="w-full overflow-x-auto flex-grow p-4">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
-          Add Student Results
-        </label>
+      {/* Student Result Table */}
+<div className="w-full overflow-x-auto flex-grow p-4">
+  <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
+    Add Student Results
+  </label>
 
-        {isLoading ? (
-          <div className="flex justify-center items-center p-10">
-            <div className="loader border-4 border-t-4 border-gray-200 dark:border-neutral-800 rounded-full w-16 h-16 animate-spin"></div>
-          </div>
-        ) : (
-          <table className="min-w-full table-auto border-collapse bg-white dark:bg-neutral-800 rounded-lg shadow-md overflow-hidden">
-            <thead className="bg-gray-100 dark:bg-neutral-700">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Student Name
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Student ID
-                </th>
-                {[...Array(6)].map((_, index) => (
-                  <th
-                    key={index}
-                    className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Test {index + 1}
-                  </th>
-                ))}
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+  {isLoading  ?  (
+    <div className="flex justify-center items-center p-10">
+      <div className="loader border-4 border-t-4 border-gray-200 dark:border-neutral-800 rounded-full w-16 h-16 animate-spin"></div>
+    </div>
+  ) : (
+    <table className="min-w-full table-auto border-collapse bg-white dark:bg-neutral-800 rounded-lg shadow-md overflow-hidden">
+      <thead className="bg-gray-100 dark:bg-neutral-700">
+        <tr>
+          <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+            Student Name
+          </th>
+          <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+            Student ID
+          </th>
+          <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+            {`1st Summarize Test (10%)`}
+          </th>
+          <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+            {`2nd Summarize Test (10%)`}
+          </th>
+          <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+            {` Midterm Project (20%)`}
+          </th>
+          <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+            {`Book and Beyond (10%)`}
+          </th>
+          <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+            {`Assignment (10%)`}
+          </th>
+          <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+            {`Exam (40%)`}
+          </th>
+          <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
                   Sum
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
                   Grade
                 </th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.map((student) => {
-                const studentResult = results.find(
-                  (result) => result.studentId === student.studentId
-                );
-                return (
-                  <tr
-                    key={student.studentId}
-                    className="border-b hover:bg-gray-50 dark:hover:bg-neutral-700"
-                  >
-                    <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
-                      {student.name}
-                    </td>
-                    <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
-                      {student.studentId}
-                    </td>
-                    {[...Array(6)].map((_, index) => (
-                      <td key={index} className="px-6 py-3">
-                        <Input
-                          type="number"
-                          placeholder="Grade"
-                          value={studentResult?.grades[index] || ""}
-                          onChange={(e) => {
-                            const newGrades = [
-                              ...(studentResult?.grades || []),
-                            ];
-                            newGrades[index] = e.target.value;
-                            handleAddResult(student.studentId, newGrades);
-                          }}
-                          className="w-full text-sm text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-pink-500 focus:border-pink-500"
-                        />
-                      </td>
-                    ))}
-                    <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
+        </tr>
+      </thead>
+      <tbody>
+        {students.map((student, index) => {
+          const studentResult = results.find(
+            (result) => result.studentId === student.studentId
+          );
+          return (
+            <tr key={student.studentId} className="border-b border-gray-200 dark:border-neutral-700">
+              <td className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                {student.name}
+              </td>
+              <td className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                {student.studentId}
+              </td>
+
+              {/* Grade Inputs */}
+              {["firstTest", "secondTest", "project", "bnb", "assignment", "exam"].map((field, idx) => (
+                <td key={idx} className="px-6 py-3">
+                  <Input
+                    type="number"
+                    placeholder={field.split(/(?=[A-Z])/).join(" ")}
+                    value={studentResult?.grades[idx] || ""}
+                    onChange={(e) => {
+                      const newGrades = [...(studentResult?.grades || [])];
+                      newGrades[idx] = e.target.value;
+                      handleAddResult(student.studentId, newGrades);
+                    }}
+                    className="w-full text-sm text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-purple-500 focus:border-purple-500"
+                  />
+                </td>
+              ))}
+               <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
                       {studentResult ? studentResult.sum : "-"}
                     </td>
                     <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
                       {studentResult ? studentResult.grade : "-"}
                     </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-      </div>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  )}
+</div>
+
 
       {/* Submit Button */}
       <div className="w-full text-center mt-6">
         <button
           onClick={handleSubmit}
-          className="bg-pink-500 text-white py-2 px-6 rounded-md hover:bg-pink-600 focus:ring-4 focus:ring-pink-300 disabled:bg-gray-300"
+          className="bg-purple-500 text-white py-6 px-10 rounded-full hover:bg-purple-600 focus:ring-4 focus:ring-purple-300 disabled:bg-gray-300"
           disabled={
             isProcessing ||
             !classRoom ||

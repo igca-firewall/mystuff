@@ -44,7 +44,7 @@ const StudentForm = () => {
     "SS2C",
     "SS3A",
     "SS3B",
-    "SS3C",
+    "SS3C"
     
   ];
 

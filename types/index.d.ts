@@ -95,7 +95,16 @@ declare type ResultParams = {
   classRoom: string;
   term: string;
   id?: string;
+  firstTest?: strring;
+  secondTest?: string;
+  project?: string;
+  bnb?: string;
+  assignment?: string;
+  exam?: string;
+  result?: string;
 };
+
+
 interface Helper {
   user: User;
   file?: FormData;

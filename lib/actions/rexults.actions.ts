@@ -14,24 +14,39 @@ const {
   APPWRITE_RESULT_COLLECTION_ID: RESULTS_ID,
   //     APPWRITE_USER_COLLECTION_ID: USER_COLLECTION_ID,
   //     APPWRITE_TRANSACTION_COLLECTION_ID: TRANSACTIONS_ID,
-       APPWRITE_SCORES_COLLECTION_ID: SCORES_ID,
+  APPWRITE_SCORES_COLLECTION_ID: SCORES_ID,
   //     APPWRITE_SCRATCHCARD_COLLECTION_ID: SCRATCHCARD_COLLECION_ID,
   // APPWRITE_SUBJECT_COLLECTION_ID: SUBJECTS_ID,
 } = process.env;
 
 export const fetchResult = async ({ classRoom, id, term }: ResultParams) => {
   const { database } = await createAdminClient();
-  const result = await database.listDocuments(DATABASE_ID!, RESULTS_ID!, [
-    Query.equal("studentId", id  || ""),
-    Query.equal("classRoom", classRoom),
-    // Query.equal("term", term),
-  ]);
-  if (!result) {
-    console.log("No results found:", result);
+
+  // Prepare query filters dynamically based on available parameters
+  const queries = [];
+  if (id) queries.push(Query.equal("studentId", id));
+  if (classRoom) queries.push(Query.equal("classRoom", classRoom));
+  if (term) queries.push(Query.equal("term", term));
+
+  try {
+    // Fetch results based on constructed queries
+    const result = await database.listDocuments(
+      DATABASE_ID!,
+      RESULTS_ID!,
+      queries
+    );
+
+    if (!result || !result.documents || result.documents.length === 0) {
+      console.log("No results found:", result);
+      return false;
+    }
+
+    console.log("Result retrieved successfully 😁😁😁", result);
+    return parseStringify(result.documents);
+  } catch (error) {
+    console.error("Error fetching results:", error);
     return false;
   }
-  console.log("Result retrieved Successfully 😁😁😁", result);
-  return parseStringify(result.documents);
 };
 
 export const updateResults = async ({
@@ -76,8 +91,12 @@ export const updateResults = async ({
 
 export const uploadResults = async ({
   id,
-  scores,
   classRoom,
+  term,
+  grade,
+  createdBy,
+  subject,
+  total,
   firstTest,
   secondTest,
   project,
@@ -85,14 +104,8 @@ export const uploadResults = async ({
   assignment,
   exam,
   result,
-  term,
-  grade,
-  createdBy,
-  subject,
-  total
 }: {
   id: string;
-  scores: string[];
   classRoom: string;
   term: string;
   grade: string;
@@ -108,42 +121,56 @@ export const uploadResults = async ({
   result: string;
 }) => {
   const { database } = await createAdminClient();
-const SID = ID.unique()
+  const SID = ID.unique();
+  try {
+    // Create the scores document
+    const uploadScores = await database.createDocument(
+      DATABASE_ID!,
+      SCORES_ID!,
+      SID, // Use SID here
+      {
+        firstTest,
+        secondTest,
+        project,
+        bnb,
+        assignment,
+        subject,
+        total,
+        grade,
+        exam,
+        result: SID, // Store the same ID in the result field if necessary
+      }
+    );
 
-const uploadScores = await database.createDocument(
-  DATABASE_ID!,
-  SCORES_ID!,
-  SID,
-  {
-    firstTest,
-    secondTest,
-    project,
-    bnb,
-    assignment,
-    exam,
-    result,
-  }
-)
-
-  const upload = await database.createDocument(
-    DATABASE_ID!,
-    RESULTS_ID!,
-    ID.unique(),
-    {
-      studentId: id,
-      scores : uploadScores.$id,
-      classRoom,
-      term,
-      grade,
-      createdBy,
-      subject,
-      total,
+    // Check if the scores document was created successfully
+    if (!uploadScores || !uploadScores.$id) {
+      console.error("Failed to upload scores.");
+      return false;
     }
-  );
-  if (!upload) {
-    console.log("Error uploading results", upload);
+
+    // Use the ID of the uploaded scores document as a reference in the results document
+    const upload = await database.createDocument(
+      DATABASE_ID!,
+      RESULTS_ID!,
+      ID.unique(),
+      {
+        studentId: id,
+        scores: [SID], // Wrap the single document ID in an array
+        classRoom,
+        term,
+        createdBy,
+      }
+    );
+
+    if (!upload) {
+      console.error("Error uploading results", upload);
+      return false;
+    }
+
+    console.log("Results uploaded successfully", upload);
+    return parseStringify(upload);
+  } catch (error) {
+    console.error("Error in uploading results:", error);
     return false;
   }
-  console.log("Results uploaded successfully", upload);
-  return parseStringify(upload);
 };
