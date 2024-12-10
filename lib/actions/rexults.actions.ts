@@ -22,32 +22,45 @@ const {
 export const fetchResult = async ({ classRoom, id, term }: ResultParams) => {
   const { database } = await createAdminClient();
 
-  // Prepare query filters dynamically based on available parameters
-  const queries = [];
-  if (id) queries.push(Query.equal("studentId", id));
-  if (classRoom) queries.push(Query.equal("classRoom", classRoom));
-  if (term) queries.push(Query.equal("term", term));
+  // Prepare query filters for the `RESULTS_ID` collection
+  const resultQueries = [];
+  if (id) resultQueries.push(Query.equal("studentId", id));
+  if (classRoom) resultQueries.push(Query.equal("classRoom", classRoom));
+  if (term) resultQueries.push(Query.equal("term", term));
 
   try {
-    // Fetch results based on constructed queries
-    const result = await database.listDocuments(
-      DATABASE_ID!,
-      RESULTS_ID!,
-      queries
-    );
+    // Fetch results from the `RESULTS_ID` collection
+    const resultData = await database.listDocuments(DATABASE_ID!, RESULTS_ID!, resultQueries);
 
-    if (!result || !result.documents || result.documents.length === 0) {
-      console.log("No results found:", result);
+    if (!resultData || !resultData.documents || resultData.documents.length === 0) {
+      console.log("No results found:", resultData);
       return false;
     }
 
-    console.log("Result retrieved successfully 😁😁😁", result);
-    return parseStringify(result.documents);
+    console.log("Results metadata retrieved successfully:", resultData.documents);
+
+    // Fetch scores for each result document
+    const combinedResults = await Promise.all(
+      resultData.documents.map(async (resultDoc) => {
+        const scoresArray = resultDoc.scores; // Assumes `scores` is an array of IDs
+        const scoresDetails = await Promise.all(
+          scoresArray.map((scoreId: string) =>
+            database.getDocument(DATABASE_ID!, SCORES_ID!, scoreId)
+          )
+        );
+
+        return { ...resultDoc, scoresDetails };
+      })
+    );
+
+    console.log("Combined results with scores retrieved successfully 😁😁😁", combinedResults);
+    return parseStringify(combinedResults);
   } catch (error) {
-    console.error("Error fetching results:", error);
+    console.error("Error fetching results and scores:", error);
     return false;
   }
 };
+
 
 export const updateResults = async ({
   id,
@@ -123,11 +136,11 @@ export const uploadResults = async ({
   const { database } = await createAdminClient();
   const SID = ID.unique();
   try {
-    // Create the scores document
+    // Create the scores document for the new subject
     const uploadScores = await database.createDocument(
       DATABASE_ID!,
       SCORES_ID!,
-      SID, // Use SID here
+      SID,
       {
         firstTest,
         secondTest,
@@ -138,39 +151,62 @@ export const uploadResults = async ({
         total,
         grade,
         exam,
-        result: SID, // Store the same ID in the result field if necessary
+        result: SID,
       }
     );
 
-    // Check if the scores document was created successfully
     if (!uploadScores || !uploadScores.$id) {
       console.error("Failed to upload scores.");
       return false;
     }
 
-    // Use the ID of the uploaded scores document as a reference in the results document
-    const upload = await database.createDocument(
+    // Check if the results document already exists for the student
+    const existingResults = await database.listDocuments(
       DATABASE_ID!,
       RESULTS_ID!,
-      ID.unique(),
-      {
-        studentId: id,
-        scores: [SID], // Wrap the single document ID in an array
-        classRoom,
-        term,
-        createdBy,
-      }
+      [Query.equal("studentId", id), Query.equal("classRoom", classRoom), Query.equal("term", term)]
     );
 
-    if (!upload) {
-      console.error("Error uploading results", upload);
-      return false;
-    }
+    if (existingResults.total > 0) {
+      // If results document exists, update the `scores` array
+      const resultDoc = existingResults.documents[0];
+      const updatedScores = [...(resultDoc.scores || []), SID];
 
-    console.log("Results uploaded successfully", upload);
-    return parseStringify(upload);
+      const updatedResult = await database.updateDocument(
+        DATABASE_ID!,
+        RESULTS_ID!,
+        resultDoc.$id,
+        { scores: updatedScores }
+      );
+
+      console.log("Updated results document successfully:", updatedResult);
+      return parseStringify(updatedResult);
+    } else {
+      // If no results document exists, create a new one
+      const upload = await database.createDocument(
+        DATABASE_ID!,
+        RESULTS_ID!,
+        ID.unique(),
+        {
+          studentId: id,
+          scores: [SID], // Initialize the `scores` array with the first subject
+          classRoom,
+          term,
+          createdBy,
+        }
+      );
+
+      if (!upload) {
+        console.error("Error uploading results", upload);
+        return false;
+      }
+
+      console.log("Results uploaded successfully:", upload);
+      return parseStringify(upload);
+    }
   } catch (error) {
     console.error("Error in uploading results:", error);
     return false;
   }
 };
+
