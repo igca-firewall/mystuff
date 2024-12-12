@@ -238,30 +238,30 @@ const SubjectResultUploader: React.FC = () => {
           classRoom,
         });
 
-        // if (studentsData) {
-        //   // Fetch results and scores for each student
-        //   const studentsWithScores = await Promise.all(
-        //     studentsData.map(async (student) => {
-        //       const resultData = await fetchResultWithSubject({
-        //         classRoom,
-        //          id: student.studentId,
-        //         term,
-        //         subject,
-        //         session: session // Include subject
-        //       });
+        if (studentsData) {
+          // Fetch results and scores for each student
+          const studentsWithScores = await Promise.all(
+            studentsData.map(async (student) => {
+              const resultData = await fetchResultWithSubject({
+                classRoom,
+                // id: student.studentId,
+                term,
+                subject,
+                session: session // Include subject
+              });
 
-        //       // Map the result to the Student type
-        //       return {
-        //         $id: student.$id,
-        //         name: student.name,
-        //         studentId: student.studentId,
-        //         scores: resultData,
-        //       };
-        //     })
-        //   );
+              // Map the result to the Student type
+              return {
+                $id: student.$id,
+                name: student.name,
+                studentId: student.studentId,
+                scores: resultData ? resultData[0]?.scoresDetails : [],
+              };
+            })
+          );
 
-        //   setStudents(studentsWithScores as Student[]); // Ensure type matches
-        // }
+          setStudents(studentsWithScores as Student[]); // Ensure type matches
+        }
       } catch (error) {
         console.error("Error fetching students and their scores:", error);
       } finally {
