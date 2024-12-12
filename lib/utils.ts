@@ -85,7 +85,8 @@ export const formatDateTime = (dateString: Date) => {
 //   return formatter.format(amount);
 // }
 
-export const parseStringify = <T>(value: T): T => JSON.parse(JSON.stringify(value ));
+export const parseStringify = <T>(value: T): T =>
+  JSON.parse(JSON.stringify(value));
 
 export const removeSpecialCharacters = (value: string) => {
   return value.replace(/[^\w\s]/gi, "");
@@ -204,67 +205,52 @@ export function formUrlQuery({ params, key, value }: UrlQueryParams) {
 //   return date > twoDaysAgo ? "Processing" : "Success";
 // };
 
-
 export const authFormSchema = (type: string, role: string) => {
-  return z.object({
-    email: z.string().email("Invalid email").min(1, "Email is required"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-    role: z.enum(["admin", "teacher", "viewer"]),
-    firstName: z
-      .string()
-      .min(1, "First Name is required")
-      .optional(), // Optional for non-relevant roles
-    lastName: z
-      .string()
-      .min(1, "Last Name is required")
-      .optional(),
-    phone: z
-      .string()
-      .min(1, "Phone is required")
-      .optional(),
-    dob: z
-      .string()
-      .min(1, "Date of Birth is required")
-      .optional(),
-    guardianContact: z
-      .string()
-      .min(1, "Guardian Contact is required")
-      .optional(),
-    subject: z
-      .string()
-      .min(1, "Subject Specialization is required")
-      .optional(),
-    adminContact: z
-      .string()
-      .min(1, "Admin Contact is required")
-      .optional(),
-    adminCode: z
-      .string()
-      .min(1, "Admin Code is required")
-      .optional(),
-    adminId: z
-      .string()
-      .min(1, "Admin ID is required")
-      .optional(),
-  }).refine((data) => {
-    if (role === "admin") {
-      return (
-        data.adminContact && data.adminCode && data.adminId && data.firstName
-      );
-    }
-    if (role === "teacher") {
-      return data.phone && data.subject && data.firstName;
-    }
-    if (role === "viewer") {
-      return data.dob && data.guardianContact && data.firstName;
-    }
-    return true;
-  }, {
-    message: "Required fields are missing for the selected role.",
-    path: [], // Error applies to the entire object
-  });
+  return z
+    .object({
+      email: z.string().email("Invalid email").min(1, "Email is required"),
+      password: z.string().min(6, "Password must be at least 6 characters"),
+      role: z.enum(["admin", "teacher", "viewer"]),
+      firstName: z.string().min(1, "First Name is required").optional(), // Optional for non-relevant roles
+      lastName: z.string().min(1, "Last Name is required").optional(),
+      phone: z.string().min(1, "Phone is required").optional(),
+      dob: z.string().min(1, "Date of Birth is required").optional(),
+      guardianContact: z
+        .string()
+        .min(1, "Guardian Contact is required")
+        .optional(),
+      subject: z
+        .string()
+        .min(1, "Subject Specialization is required")
+        .optional(),
+      adminContact: z.string().min(1, "Admin Contact is required").optional(),
+      adminCode: z.string().min(1, "Admin Code is required").optional(),
+      adminId: z.string().min(1, "Admin ID is required").optional(),
+    })
+    .refine(
+      (data) => {
+        if (role === "admin") {
+          return (
+            data.adminContact &&
+            data.adminCode &&
+            data.adminId &&
+            data.firstName
+          );
+        }
+        if (role === "teacher") {
+          return data.phone && data.subject && data.firstName;
+        }
+        if (role === "viewer") {
+          return data.dob && data.guardianContact && data.firstName;
+        }
+        return true;
+      },
+      {
+        message: "Required fields are missing for the selected role.",
+        path: [], // Error applies to the entire object
+      }
+    );
 };
-
 
 export const PostValidation = z.object({
   location: z
@@ -674,16 +660,24 @@ export const subjects = [
 ];
 
 export const classOrder = [
+  // Class options
+
   "JSS1A",
   "JSS1B",
+  "JSS1C",
   "JSS2A",
   "JSS2B",
+  "JSS2C",
   "JSS3A",
   "JSS3B",
+  "JSS3C",
   "SS1A",
   "SS1B",
-  "SS2-Science",
-  "SS2-Arts",
-  "SS3-Science",
-  "SS3-Arts",
+  "SS1C",
+  "SS2A",
+  "SS2B",
+  "SS2C",
+  "SS3A",
+  "SS3B",
+  "SS3C",
 ];

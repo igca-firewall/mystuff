@@ -98,6 +98,7 @@ declare type ResultParams = {
   firstTest?: strring;
   secondTest?: string;
   project?: string;
+  session?:string;
   bnb?: string;
   assignment?: string;
   exam?: string;

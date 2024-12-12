@@ -6,7 +6,10 @@ import { getStudentsByClass } from "@/lib/actions/studentsData.actions";
 import Select from "./CustomSelect";
 import { classOrder } from "@/lib/utils";
 import { useUserContext } from "@/context/AuthContext";
-import { uploadResults } from "@/lib/actions/rexults.actions";
+import {
+  uploadResults,
+  fetchResultWithSubject,
+} from "@/lib/actions/rexults.actions";
 
 // Interfaces for student and result data
 interface Student {
@@ -39,21 +42,27 @@ const calculateGrade = (sum: number): string => {
 const SubjectResultUploader: React.FC = () => {
   const [subject, setSubject] = useState<string>("");
   const [classRoom, setClassRoom] = useState<string>("");
-  const [term, setTerm] = useState<string>(""); // State for Term
+  const [term, setTerm] = useState<string>("");
+  const [session, setSession] = useState<string>(""); // State for Term
   const [results, setResults] = useState<Result[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const { user } = useUserContext();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false); // Processing state for submit button
   const [errors, setErrors] = useState<string[]>([]); // Error state
-
+  // New state for processing status
+  const [isSuccess, setIsSuccess] = useState(false); // State for success popup
+  const [isFailure, setIsFailure] = useState(false); // State for failure popup
+  const [errorMessage, setErrorMessage] = useState(""); // State for storing error message
+  const [completedSubmissions, setCompletedSubmissions] = useState(0);
+  const [total, setTotal] = useState(0);
   const validateForm = (): boolean => {
     const newErrors: string[] = [];
 
     if (!classRoom) newErrors.push("Class is required.");
     if (!subject) newErrors.push("Subject is required.");
     if (!term) newErrors.push("Term is required.");
-
+    if (!session) newErrors.push("Session is required.");
     // Check if all students have grades
     const allGradesEntered = results.every((result) =>
       result.grades.every((grade) => grade.trim() !== "")
@@ -68,20 +77,30 @@ const SubjectResultUploader: React.FC = () => {
     setErrors(newErrors);
     return newErrors.length === 0;
   };
-
+  const autoClosePopup = (
+    setState: React.Dispatch<React.SetStateAction<boolean>>
+  ) => {
+    setTimeout(() => setState(false), 3000);
+  };
   // Handle form submission
   const handleSubmit = async () => {
     if (!validateForm()) return;
-  
+
+    // Add extensive state handling
     setIsProcessing(true);
+    setIsSuccess(false); // Reset before submission
+    setIsFailure(false); // Reset before submission
+    setCompletedSubmissions(0);
+
     const uploadErrors: string[] = [];
-  
+    const successfulUploads: string[] = [];
+
     try {
       for (const result of results) {
         // Destructure grades to map them to respective fields
         const [firstTest, secondTest, project, bnb, assignment, exam] =
           result.grades;
-  
+
         // Prepare the result data for the upload
         const uploadData = {
           id: result.studentId,
@@ -94,25 +113,42 @@ const SubjectResultUploader: React.FC = () => {
           result: `${result.sum}`,
           classRoom,
           term,
+          session,
           grade: result.grade,
           subject,
           createdBy: user.$id,
           total: `${result.sum}`,
         };
-  
+
         try {
           // Call the uploadResults function
           const uploadResponse = await uploadResults(uploadData);
-  
-          if (!uploadResponse) {
-            throw new Error(`Failed to upload result for ${result.studentName}`);
+
+          if (uploadResponse) {
+            successfulUploads.push(result.studentName);
+            // Clear the result from state if successfully uploaded
+            setResults((prevResults) =>
+              prevResults.filter((r) => r.studentId !== result.studentId)
+            );
+            setCompletedSubmissions((prev) => prev + 1);
+            setIsSuccess(true); // Show success popup for this submission
+            autoClosePopup(setIsSuccess); // Close success popup after 3 seconds
+          } else {
+            throw new Error(
+              `Failed to upload result for ${result.studentName}`
+            );
           }
         } catch (error) {
-          console.error(`Error uploading result for ${result.studentName}:`, error);
+          console.error(
+            `Error uploading result for ${result.studentName}:`,
+            error
+          );
           uploadErrors.push(result.studentName);
+          setIsFailure(true); // Handle individual failure
+          autoClosePopup(setIsFailure); // Close failure popup after 3 seconds
         }
       }
-  
+
       if (uploadErrors.length > 0) {
         setErrors([
           ...errors,
@@ -124,6 +160,14 @@ const SubjectResultUploader: React.FC = () => {
         setSubject("");
         setTerm("");
         setResults([]);
+        setSession("");
+      }
+
+      if (successfulUploads.length > 0) {
+        // Show success page for the successful uploads
+        console.log(
+          `Successfully uploaded results for: ${successfulUploads.join(", ")}`
+        );
       }
     } catch (error) {
       console.error("Unexpected error during submission:", error);
@@ -131,11 +175,15 @@ const SubjectResultUploader: React.FC = () => {
         ...prev,
         "An unexpected error occurred. Please try again.",
       ]);
+      setIsFailure(true); // Handle any other errors
+      autoClosePopup(setIsFailure); // Close failure popup after 3 seconds
     } finally {
-      setIsProcessing(false);
+      setIsProcessing(false); // Reset processing state
     }
   };
-  
+
+  const currentYear = new Date().getFullYear();
+  const nextYear = currentYear + 1;
 
   // Handle adding results for a student
   const handleAddResult = (studentId: string, grades: string[]) => {
@@ -146,7 +194,7 @@ const SubjectResultUploader: React.FC = () => {
       ]);
       return;
     }
-  
+
     const student = students.find((student) => student.studentId === studentId);
     if (student) {
       const sum = grades.reduce(
@@ -154,12 +202,12 @@ const SubjectResultUploader: React.FC = () => {
         0
       );
       const grade = calculateGrade(sum);
-  
+
       const updatedResults = [...results];
       const existingResultIndex = updatedResults.findIndex(
         (result) => result.studentId === studentId
       );
-  
+
       if (existingResultIndex !== -1) {
         updatedResults[existingResultIndex] = {
           ...updatedResults[existingResultIndex],
@@ -176,35 +224,56 @@ const SubjectResultUploader: React.FC = () => {
           grade,
         });
       }
-  
+
       setResults(updatedResults);
     }
   };
-  
   useEffect(() => {
-    const fetchStudents = async () => {
+    const fetchStudentsWithScores = async () => {
       try {
         setIsLoading(true);
-        const xed: Models.Document[] = await getStudentsByClass({ classRoom });
-        if (xed) {
-          const transformedStudents = xed.map((student) => ({
-            $id: student.$id,
-            name: student.name,
-            studentId: student.studentId,
-          }));
-          setStudents(transformedStudents);
-        }
+
+        // Fetch students by class
+        const studentsData: Models.Document[] = await getStudentsByClass({
+          classRoom,
+        });
+
+        // if (studentsData) {
+        //   // Fetch results and scores for each student
+        //   const studentsWithScores = await Promise.all(
+        //     studentsData.map(async (student) => {
+        //       const resultData = await fetchResultWithSubject({
+        //         classRoom,
+        //          id: student.studentId,
+        //         term,
+        //         subject,
+        //         session: session // Include subject
+        //       });
+
+        //       // Map the result to the Student type
+        //       return {
+        //         $id: student.$id,
+        //         name: student.name,
+        //         studentId: student.studentId,
+        //         scores: resultData,
+        //       };
+        //     })
+        //   );
+
+        //   setStudents(studentsWithScores as Student[]); // Ensure type matches
+        // }
       } catch (error) {
-        console.error("Error fetching students:", error);
+        console.error("Error fetching students and their scores:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (classRoom) {
-      fetchStudents();
+    if (classRoom && subject && term && session) {
+      fetchStudentsWithScores();
     }
-  }, [classRoom]);
+  }, [classRoom, subject, term, session]);
+
   if (user?.role !== "admin") {
     return (
       <div className="flex items-center justify-center h-full bg-red-100 p-6 rounded-lg shadow-lg">
@@ -296,99 +365,131 @@ const SubjectResultUploader: React.FC = () => {
             className="w-full border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-purple-500 focus:border-purple-500"
           />
         </div>
+        <div className="mb-5 w-full sm:w-1/3">
+          <label
+            htmlFor="term"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2"
+          >
+            Select Session
+          </label>
+          <Select
+            options={[
+              { value:  `${currentYear}/${nextYear}` , label: `${currentYear}/${nextYear}` },
+            
+            ]}
+            value={session}
+            onChange={(value) => setSession(value)}
+            placeholder="Choose a Session"
+            className="w-full border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-purple-500 focus:border-purple-500"
+          />
+        </div>
       </div>
 
       {/* Student Result Table */}
       {/* Student Result Table */}
-<div className="w-full overflow-x-auto flex-grow p-4">
-  <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
-    Add Student Results
-  </label>
+      <div className="w-full overflow-x-auto flex-grow p-4">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
+          Add Student Results
+        </label>
 
-  {isLoading  ?  (
-    <div className="flex justify-center items-center p-10">
-      <div className="loader border-4 border-t-4 border-gray-200 dark:border-neutral-800 rounded-full w-16 h-16 animate-spin"></div>
-    </div>
-  ) : (
-    <table className="min-w-full table-auto border-collapse bg-white dark:bg-neutral-800 rounded-lg shadow-md overflow-hidden">
-      <thead className="bg-gray-100 dark:bg-neutral-700">
-        <tr>
-          <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-            Student Name
-          </th>
-          <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-            Student ID
-          </th>
-          <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-            {`1st Summarize Test (10%)`}
-          </th>
-          <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-            {`2nd Summarize Test (10%)`}
-          </th>
-          <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-            {` Midterm Project (20%)`}
-          </th>
-          <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-            {`Book and Beyond (10%)`}
-          </th>
-          <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-            {`Assignment (10%)`}
-          </th>
-          <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-            {`Exam (40%)`}
-          </th>
-          <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+        {isLoading ? (
+        <div className="flex justify-center items-center h-full bg-gray-50">
+        <div className="flex flex-col items-center">
+          <div className="w-12 h-12 border-4 border-gray-300 border-dotted rounded-full animate-spin"></div>
+          <p className="mt-4 text-gray-600 font-medium">Loading...</p>
+        </div>
+      </div>
+        ) : (
+          <table className="min-w-full table-auto border-collapse bg-white dark:bg-neutral-800 rounded-lg shadow-md overflow-hidden">
+            <thead className="bg-gray-100 dark:bg-neutral-700">
+              <tr>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Student Name
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Student ID
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {`1st Summarize Test (10%)`}
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {`2nd Summarize Test (10%)`}
+                </th>{" "}
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {`Assignment (10%)`}
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {` Midterm Project (10%)`}
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {`Book and Beyond (20%)`}
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {`Exam (40%)`}
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
                   Sum
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
                   Grade
                 </th>
-        </tr>
-      </thead>
-      <tbody>
-        {students.map((student, index) => {
-          const studentResult = results.find(
-            (result) => result.studentId === student.studentId
-          );
-          return (
-            <tr key={student.studentId} className="border-b border-gray-200 dark:border-neutral-700">
-              <td className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                {student.name}
-              </td>
-              <td className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                {student.studentId}
-              </td>
+              </tr>
+            </thead>
+            <tbody>
+              {students.map((student, index) => {
+                const studentResult = results.find(
+                  (result) => result.studentId === student.studentId
+                );
+                return (
+                  <tr
+                    key={student.studentId}
+                    className="border-b border-gray-200 dark:border-neutral-700"
+                  >
+                    <td className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {student.name}
+                    </td>
+                    <td className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {student.studentId}
+                    </td>
 
-              {/* Grade Inputs */}
-              {["firstTest", "secondTest", "project", "bnb", "assignment", "exam"].map((field, idx) => (
-                <td key={idx} className="px-6 py-3">
-                  <Input
-                    type="number"
-                    placeholder={field.split(/(?=[A-Z])/).join(" ")}
-                    value={studentResult?.grades[idx] || ""}
-                    onChange={(e) => {
-                      const newGrades = [...(studentResult?.grades || [])];
-                      newGrades[idx] = e.target.value;
-                      handleAddResult(student.studentId, newGrades);
-                    }}
-                    className="w-full text-sm text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-purple-500 focus:border-purple-500"
-                  />
-                </td>
-              ))}
-               <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
+                    {/* Grade Inputs */}
+                    {[
+                      "firstTest",
+                      "secondTest",
+                      "assignment",
+                      "project",
+                      "bnb",
+                      "exam",
+                    ].map((field, idx) => (
+                      <td key={idx} className="px-6 py-3">
+                        <Input
+                          type="number"
+                          placeholder={field.split(/(?=[A-Z])/).join(" ")}
+                          value={studentResult?.grades[idx] || ""}
+                          onChange={(e) => {
+                            const newGrades = [
+                              ...(studentResult?.grades || []),
+                            ];
+                            newGrades[idx] = e.target.value;
+                            handleAddResult(student.studentId, newGrades);
+                          }}
+                          className="w-full text-sm text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-purple-500 focus:border-purple-500"
+                        />
+                      </td>
+                    ))}
+                    <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
                       {studentResult ? studentResult.sum : "-"}
                     </td>
                     <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
                       {studentResult ? studentResult.grade : "-"}
                     </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
-  )}
-</div>
-
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
 
       {/* Submit Button */}
       <div className="w-full text-center mt-6">
