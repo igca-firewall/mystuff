@@ -122,7 +122,9 @@ const {user} = useUserContext()
   };
 if( user.role !== "admin" &&
   (
-    
+    <div>
+      You are not authorised
+    </div>
   )
 )
   return (
