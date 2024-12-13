@@ -1,4 +1,3 @@
-
 import LeftSidebar from "@/components/utilities/LeftSidebar";
 import RightSidebar from "@/components/utilities/RightBar";
 import Topbar from "@/components/utilities/Topbar";
@@ -10,7 +9,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { user } = useUserContext();
   return (
     <main className="w-full h-full flex font-inter">
       <AuthProvider>
@@ -27,12 +25,9 @@ export default async function RootLayout({
             {/* <DarkModeToggle /> */}
           </aside>
         </div>{" "}
-        {user.role === "admin" && 
-        ( <aside className="fixed top-0 right-0 h-full w-[300px]">
+        <aside className="fixed top-0 right-0 h-full w-[300px]">
           <RightSidebar />
-        </aside>)
-        }
-       
+        </aside>
       </AuthProvider>
     </main>
   );

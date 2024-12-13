@@ -12,10 +12,17 @@ import { useUserContext } from "@/context/AuthContext";
 const RightSidebar = () => {
   const pathname = usePathname();
   const { user } = useUserContext();
+  {
+    if (!user) {
+      return null;
+    }
+    if (user.role !== "admin") {
+      return null;
+    }
+  }
   return (
     <section className="fixed  custom-scrollbar rightbar h-screen">
       <div className="flex flex-col h-full gap-6 px-4 ">
-       
         {rightBarLinks.map((item) => {
           const isActive =
             pathname === item.route || pathname?.startsWith(`${item.route}/`);
@@ -71,7 +78,6 @@ const RightSidebar = () => {
       <div className="p-3 items-center">
         <hr />
       </div>
-     
     </section>
   );
 };
