@@ -82,7 +82,7 @@ export const fetchResult = async ({
 };
 export const fetchResultWithSubject = async ({
   classRoom,
-id,
+  // id,
   term,
   subject,
   session,
@@ -94,6 +94,7 @@ id,
   if (session) resultQueries.push(Query.equal("session", session));
   if (classRoom) resultQueries.push(Query.equal("classRoom", classRoom));
   if (term) resultQueries.push(Query.equal("term", term));
+  // if (id || Array.isArray(id)) resultQueries.push(Query.equal("studentId", id)); // Handle array of IDs
 
   try {
     // Fetch results from the `RESULTS_ID` collection
@@ -120,7 +121,7 @@ id,
     if (session) scoresQuery.push(Query.equal("session", session));
     if (subject) scoresQuery.push(Query.equal("subject", subject));
     if (term) scoresQuery.push(Query.equal("term", term));
-    if (id) scoresQuery.push(Query.equal("studentId", id));
+    // if (id || Array.isArray(id)) scoresQuery.push(Query.equal("studentId", id)); // Handle array of IDs
 
     // Fetch scores for the selected subject in each result document
     const combinedResults = await database.listDocuments(
@@ -128,32 +129,7 @@ id,
       SCORES_ID!,
       scoresQuery
     );
-    // const combinedResults = await Promise.all(
-    //   resultData.documents.map(async (resultDoc) => {
-    //     const scoresArray = resultDoc.scores; // Assumes `scores` is an array of IDs
-    //     const scoresDetails = await Promise.all(
-    //       scoresArray.map(async (scoreId: string) => {
-    //         const scoreDoc = await database.getDocument(
-    //           DATABASE_ID!,
-    //           SCORES_ID!,
-    //           scoreId
-    //         );
-
-    //         // Filter by subject if subject is provided
-    //         if (subject && scoreDoc.subject !== subject) {
-    //           return null; // Exclude non-matching scores
-    //         }
-    //         return scoreDoc;
-    //       })
-    //     );
-
-    //     return {
-    //       ...resultDoc,
-    //       scoresDetails: scoresDetails.filter(Boolean), // Remove null values
-    //     };
-    //   })
-    // );
-
+  
     console.log(
       "Combined results with scores retrieved successfully 😁😁😁",
       combinedResults

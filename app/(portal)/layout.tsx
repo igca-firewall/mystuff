@@ -1,14 +1,16 @@
 
 import LeftSidebar from "@/components/utilities/LeftSidebar";
+import RightSidebar from "@/components/utilities/RightBar";
 import Topbar from "@/components/utilities/Topbar";
-import {  sidebarLinks } from "@/constants";
-import AuthProvider from "@/context/AuthContext";
+import { sidebarLinks } from "@/constants";
+import AuthProvider, { useUserContext } from "@/context/AuthContext";
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { user } = useUserContext();
   return (
     <main className="w-full h-full flex font-inter">
       <AuthProvider>
@@ -24,8 +26,13 @@ export default async function RootLayout({
           <aside className="hidden md:block xl:block fixed bottom-24 left-4 z-50">
             {/* <DarkModeToggle /> */}
           </aside>
-     
-        </div>
+        </div>{" "}
+        {user.role === "admin" && 
+        ( <aside className="fixed top-0 right-0 h-full w-[300px]">
+          <RightSidebar />
+        </aside>)
+        }
+       
       </AuthProvider>
     </main>
   );

@@ -85,7 +85,7 @@ const Topbar: React.FC<xee> = ({ links}) => {
   //     router.push(firstNotificationLink.route); // Navigate to the first notification route
   //   }
   // };
-  console.log(user, "user");
+ 
   const userImage = user.image
   return (
     <>

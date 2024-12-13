@@ -94,8 +94,8 @@ declare type IUpdateUser = {
 declare type ResultParams = {
   classRoom: string;
   term: string;
-  id?: string;
-  firstTest?: strring;
+  id?: string | string[];
+  firstTest?: string;
   secondTest?: string;
   project?: string;
   session?:string;

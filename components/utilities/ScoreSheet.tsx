@@ -10,6 +10,7 @@ import {
   uploadResults,
   fetchResultWithSubject,
 } from "@/lib/actions/rexults.actions";
+import Image from "next/image";
 
 // Interfaces for student and result data
 interface Student {
@@ -40,7 +41,7 @@ interface Scores {
   term: string;
   createdAt: string;
   studentId: string;
-  grades: string[];
+  // grades: string[];
 }
 // Grading function
 const calculateGrade = (sum: number): string => {
@@ -82,7 +83,7 @@ const SubjectResultUploader: React.FC = () => {
     if (!session) newErrors.push("Session is required.");
     // Check if all students have grades
     const allGradesEntered = results.every((result) =>
-      result.grades.every((grade) => grade.trim() !== "")
+      result.grades.every((grade) => grade.trim() !== "" ||  grade.trim() < `${101}`)
     );
     if (!allGradesEntered) {
       newErrors.push("Please enter grades for all students.");
@@ -274,13 +275,16 @@ const SubjectResultUploader: React.FC = () => {
     const fetchStudentsScore = async () => {
       try {
         setIsLoading(true);
+        // const studentIds = students.map((student) => student.studentId); // Get array of IDs
+
         const particles = await fetchResultWithSubject({
           classRoom,
-          // id: students,
+          // id: studentIds, // Pass array directly
           term,
           session,
           subject,
         });
+
         if (particles) {
           const transformedScores = particles.map((scores) => ({
             $id: scores.$id,
@@ -298,17 +302,17 @@ const SubjectResultUploader: React.FC = () => {
             createdAt: scores.$createdAt,
             studentId: scores.studentId,
 
-            grades: [
-              scores.firstTest,
-              scores.secondTest,
-              scores.bnb,
-              scores.project,
-              scores.assignment,
-              scores.exam,
-            ],
+            // grades: [
+            //   scores.firstTest,
+            //   scores.secondTest,
+            //   scores.bnb,
+            //   scores.project,
+            //   scores.assignment,
+            //   scores.exam,
+            // ],
           }));
           setScores(transformedScores);
-          console.log("FEtched scores", transformedScores);
+          console.log("Fetched scores", transformedScores);
         }
       } catch (error) {
         console.error("Error fetching students:", error);
@@ -317,7 +321,7 @@ const SubjectResultUploader: React.FC = () => {
       }
     };
 
-    if (classRoom && subject && session && term && students) {
+    if (classRoom && subject && session && term && students.length > 0) {
       fetchStudentsScore();
     }
   }, [classRoom, subject, session, term, students]);
@@ -482,13 +486,24 @@ const SubjectResultUploader: React.FC = () => {
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
                   Grade
                 </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Scored?
+                </th>
               </tr>
             </thead>
             <tbody>
-              {students.map((student, index) => {
+              {students.map((student) => {
                 const studentResult = results.find(
                   (result) => result.studentId === student.studentId
                 );
+
+                // Check if the student's ID is present in the fetched scores
+                   // Check if the student's ID is present in the fetched scores array
+    const isStudentInResults = scores.some(
+      (score) => score.studentId === student.studentId
+    );
+
+
                 return (
                   <tr
                     key={student.studentId}
@@ -513,8 +528,10 @@ const SubjectResultUploader: React.FC = () => {
                       <td key={idx} className="px-6 py-3">
                         <Input
                           type="number"
-                          placeholder={field.split(/(?=[A-Z])/).join(" ")}
+                          placeholder={field === "bnb" ? "B/B": field.split(/(?=[A-Z])/).join(" ")}
                           value={studentResult?.grades[idx] || ""}
+                          max={field === "bnb" ? 20 : field === "exam" ? 40 : 10 }
+                          min={0}
                           onChange={(e) => {
                             const newGrades = [
                               ...(studentResult?.grades || []),
@@ -522,7 +539,7 @@ const SubjectResultUploader: React.FC = () => {
                             newGrades[idx] = e.target.value;
                             handleAddResult(student.studentId, newGrades);
                           }}
-                          className="w-full text-sm text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-purple-500 focus:border-purple-500"
+                          className="  w-full text-sm text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-purple-500 focus:border-purple-500"
                         />
                       </td>
                     ))}
@@ -531,6 +548,10 @@ const SubjectResultUploader: React.FC = () => {
                     </td>
                     <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
                       {studentResult ? studentResult.grade : "-"}
+                    </td>
+                    {/* New Column Showing Yes/No for Student in Results */}
+                    <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
+                      {isStudentInResults ? (<Image src="/images/verified-p.png" height={18} width={18} alt="Yes" className="items-center justify-center"/>) : (<Image src="/images/unverified.png" height={18} width={18} alt="Yes" className="items-center justify-center"/>)}
                     </td>
                   </tr>
                 );

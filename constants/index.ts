@@ -29,11 +29,12 @@ export const inbox = [
   },
 
 ];
-export const sidebarLinks = [
+
+export const rightBarLinks = [
   {
-    imgURL: "/icons/home.svg",
-    route: "/",
-    label: "Home",
+    imgURL: "/icons/dashboard.png",
+    route: "/dashboard",
+    label: "Dashboard",
   },
 
   {
@@ -41,6 +42,23 @@ export const sidebarLinks = [
     route: "/registration",
     label: "Registration",
   },
+
+
+  {
+    imgURL: "/images/add-result.png",
+    route: "/admin-score",
+    label: "Add Result",
+  },
+ 
+ 
+];
+export const sidebarLinks = [
+  {
+    imgURL: "/icons/home.svg",
+    route: "/",
+    label: "Home",
+  },
+
 
   {
     imgURL: "/icons/followers.svg",
@@ -53,14 +71,20 @@ export const sidebarLinks = [
     label: "Market",
   },
   {
-    imgURL: "/icons/wallet.svg",
-    route: "/wallet",
-    label: "Wallet",
+    imgURL: "/icons/stripe.svg",
+    route: "/checkout",
+    label: "Checkout",
   },
+
   {
     imgURL: "/icons/add-post.svg",
     route: "/create-post",
     label: "Publish",
+  },
+  {
+    imgURL: "/icons/report.png",
+    route: "/results",
+    label: "Results",
   },
 ];
 export const home = [
