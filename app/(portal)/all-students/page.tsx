@@ -10,6 +10,7 @@ import React, { useState, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import { FaEdit, FaTrashAlt } from "react-icons/fa";
 import ConfirmationModal from "@/components/utilities/CustomModal"; // Import the modal
+import { classOrder } from "@/lib/utils";
 
 interface Student {
   $id: string;
@@ -19,20 +20,7 @@ interface Student {
   classRoom: string;
 }
 
-const classOrder = [
-  "JSS1A",
-  "JSS1B",
-  "JSS2A",
-  "JSS2B",
-  "JSS3A",
-  "JSS3B",
-  "SS1A",
-  "SS1B",
-  "SS2-Science",
-  "SS2-Arts",
-  "SS3-Science",
-  "SS3-Arts",
-];
+
 
 const StudentList: React.FC = () => {
   const { user } = useUserContext();
