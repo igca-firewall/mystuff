@@ -122,9 +122,14 @@ const {user} = useUserContext()
   };
 if( user.role !== "admin" &&
   (
-    <div>
-      You are not authorised
+    <div className="flex items-center justify-center h-full bg-red-100 p-6 rounded-lg shadow-lg">
+    <div className="text-center text-red-600 font-semibold text-xl md:text-2xl">
+      <h2>You do not have access to this page.</h2>
+      <p className="mt-2 text-gray-600">
+        Please contact the administrator for assistance.
+      </p>
     </div>
+  </div>
   )
 )
   return (
