@@ -587,7 +587,8 @@
   }
   .leftsidebar_link {
     @apply relative flex justify-start gap-4 rounded-lg p-4;
-  } .rightbar {
+  }
+  .rightbar {
     @apply sticky right-0 top-0 bg-neutral-200 z-20 flex h-screen w-fit flex-col justify-between overflow-auto dark:bg-neutral-800 pb-5 pt-28 max-md:hidden;
   }
   .rightbar_link {

@@ -25,7 +25,7 @@ export default async function RootLayout({
             {/* <DarkModeToggle /> */}
           </aside>
         </div>{" "}
-        <aside className="fixed top-0 right-0 h-full w-[300px]">
+        <aside className="">
           <RightSidebar />
         </aside>
       </AuthProvider>

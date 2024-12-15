@@ -61,7 +61,7 @@ const LeftSidebar = () => {
         {/* Sheet Content that slides in from the right */}
         <SheetContent
           ref={sheetRef}
-          position="right"
+          // position="right"
           size="lg"
           className="bg-gray-100 p-6 overflow-y-auto"
           onTouchStart={handleTouchStart} 

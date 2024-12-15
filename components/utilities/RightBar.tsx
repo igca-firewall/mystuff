@@ -72,12 +72,7 @@ const RightSidebar = () => {
            </Link>{" "}
            
       </div> */}{" "}
-      <div className="flex items-center p-2 px-8 flex-between gap-1">
-        {/* <DarkThemeSwitch/> */}
-      </div>
-      <div className="p-3 items-center">
-        <hr />
-      </div>
+  
     </section>
   );
 };

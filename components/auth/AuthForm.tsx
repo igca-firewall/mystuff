@@ -69,10 +69,7 @@ const AuthForm = ({
           role: data.role!,
           image: avatarUrl,
           name: `${data.firstName} ${data.lastName}` || "User",
-          ...(data.role === "teacher" && {
-            subject: data.subject,
-            phone: data.phone,
-          }),
+       
           ...(data.role === "admin" && {
             adminContact: data.adminContact,
             adminId: data.adminId,
@@ -169,43 +166,8 @@ const AuthForm = ({
             </div>
           </>
         );
-      case "teacher":
-        return (
-          <>
-            <div className="flex gap-3 items-center">
-              <CustomFormField
-                fieldType={FormFieldType.INPUT}
-                control={form.control}
-                name="firstName"
-                label="First Name"
-                placeholder="Enter your first name."
-              />
-              <CustomFormField
-                fieldType={FormFieldType.INPUT}
-                control={form.control}
-                name="lastName"
-                label="Last Name"
-                placeholder="Enter your last name."
-              />
-            </div>
-            <div className="flex gap-3 items-center">
-              <CustomFormField
-                fieldType={FormFieldType.INPUT}
-                control={form.control}
-                name="subject"
-                label="Subject Specialization"
-                placeholder="Enter your subject."
-              />
-              <CustomFormField
-                fieldType={FormFieldType.INPUT}
-                control={form.control}
-                name="phone"
-                label="Phone"
-                placeholder="Enter your phone number."
-              />
-            </div>
-          </>
-        );
+     
+     
       case "viewer":
         return (
           <>
@@ -266,7 +228,7 @@ const AuthForm = ({
                 control={form.control}
                 options={[
                   { label: "Admin", value: "admin" },
-                  { label: "Teacher", value: "teacher" },
+                  
                   { label: "Student", value: "viewer" },
                 ]}
                 className="space-y-2"
