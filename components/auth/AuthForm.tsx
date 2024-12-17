@@ -18,7 +18,7 @@ import { useSignIn, useSignUp } from "@/lib/react-query/queriesAndMutation";
 import { useRouter } from "next/navigation";
 import CustomRadio from "../utilities/CustomRoleRadio";
 import { createScratchCard } from "@/lib/actions/scratchCard.actions";
-import { listAllStudents } from "@/lib/actions/studentsData.actions";
+
 
 const AuthForm = ({
   type,
@@ -41,17 +41,17 @@ const AuthForm = ({
       role: "viewer",
     },
   });
-  useEffect(() => {
-    const allStudents = async () => {
-      const xed = await listAllStudents(); // Assuming getMe is asynchronous
-      if (xed) {
-        console.log("list of  all students", xed);
-      } else {
-        console.log("No student found", xed)
-      }
-    };
-   allStudents();
-  }, []);
+  // useEffect(() => {
+  //   const allStudents = async () => {
+  //     const xed = await listAllStudents(); // Assuming getMe is asynchronous
+  //     if (xed) {
+  //       console.log("list of  all students", xed);
+  //     } else {
+  //       console.log("No student found", xed)
+  //     }
+  //   };
+  //  allStudents();
+  // }, []);
 
   const selectedRole = form.watch("role");
   const router = useRouter();
@@ -83,6 +83,7 @@ const AuthForm = ({
 
         const newUser = await createUser(userData);
         const scratchCard = await createScratchCard();
+
         if (newUser) {
           console.log("User and scratch card created", newUser, scratchCard);
           form.reset();

@@ -8,6 +8,11 @@ import FAQ from "@/components/utilities/FAQ";
 import Testimoni from "@/components/utilities/Testimoni";
 import HowItWorks from "@/components/utilities/HowItWorks";
 import Contact from "@/components/utilities/Contact";
+import Game from "@/components/utilities/Game";
+import MemoryGame from "@/components/utilities/Games";
+import SnakeGame from "@/components/utilities/SnakeGame";
+import SnakeGame1 from "@/components/utilities/TwoSnakes";
+import Ping from "@/components/utilities/Ping";
 
 const Marketplace = () => {
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
@@ -20,21 +25,26 @@ const Marketplace = () => {
 
   return (
     <div className="bg-gray-50 text-gray-900 font-sans">
+{/* <Game/> */}
+<MemoryGame/>
+<SnakeGame/>
+<SnakeGame1/>
+<Ping/>
       {/* Hero Section */}
-      <MarketBanner />
+      {/* <MarketBanner /> */}
 
       {/* How It Works Section */}
-      <HowItWorks />
+      {/* <HowItWorks /> */}
 
       {/* Featured Products Section */}
-      <FeaturedProducts />
+      {/* <FeaturedProducts /> */}
 
       {/* Customer Testimonials Section */}
-      <Testimoni />
+      {/* <Testimoni /> */}
       {/* FAQs Section */}
-      <FAQ />
+      {/* <FAQ /> */}
       {/* Contact*/}
-      <Contact />
+      {/* <Contact /> */}
     </div>
   );
 };

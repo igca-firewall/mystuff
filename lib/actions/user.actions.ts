@@ -125,20 +125,20 @@ export const signUp = async ({
 
       if (adminQuery.total === 0) {
         console.log("Admin not found", adminQuery);
-        return false;
+        return null;
       }
       console.log("admin found", adminQuery);
       // Admin exists: Sign in
       const session = await account.createEmailPasswordSession(email, password);
 
-      (await cookies()).set("PARTICLES_ADMINISTRATOR_IGCA", session.secret, {
+  ( await cookies()).set("PARTICLES_ADMINISTRATOR_IGCA", session.secret, {
         path: "/",
         httpOnly: true,
         sameSite: "strict",
         secure: true,
         maxAge: 6 * 30 * 24 * 60 * 60 * 1000,
       });
-
+    
       const user = await getAdminInfo({ userId: session.userId });
       console.log("User🧡🧡", session, user);
       return parseStringify(user);
