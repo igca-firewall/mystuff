@@ -26,25 +26,25 @@ const Marketplace = () => {
   return (
     <div className="bg-gray-50 text-gray-900 font-sans">
 {/* <Game/> */}
-<MemoryGame/>
+{/* <MemoryGame/>
 <SnakeGame/>
 <SnakeGame1/>
-<Ping/>
+<Ping/> */}
       {/* Hero Section */}
-      {/* <MarketBanner /> */}
+      <MarketBanner />
 
       {/* How It Works Section */}
-      {/* <HowItWorks /> */}
+      <HowItWorks />
 
       {/* Featured Products Section */}
-      {/* <FeaturedProducts /> */}
+      <FeaturedProducts />
 
       {/* Customer Testimonials Section */}
-      {/* <Testimoni /> */}
+      <Testimoni />
       {/* FAQs Section */}
-      {/* <FAQ /> */}
+      <FAQ />
       {/* Contact*/}
-      {/* <Contact /> */}
+      <Contact />
     </div>
   );
 };
