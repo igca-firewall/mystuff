@@ -136,9 +136,12 @@ const MarketBanner = () => {
   return (
     <div
        {...handlers}
-       ref={ref}
+    
       className="relative flex flex-col w-full h-[350px] md:h-[450px] xl:h-[500px] rounded-[25px] bg-neutral-200 dark:bg-neutral-800 p-4 overflow-hidden"
     >
+        <div ref={ref}>
+
+        </div>
       <div className="absolute top-4 right-4 text-sm bg-opacity-25 dark:bg-neutral-700 px-2 rounded-full bg-white/80 text-center font-regular text-neutral-600 dark:text-neutral-200">
         {slides[currentIndex]?.price}
       </div>

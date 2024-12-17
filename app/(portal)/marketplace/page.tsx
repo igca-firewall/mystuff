@@ -24,7 +24,7 @@ const Marketplace = () => {
       <MarketBanner />
 
       {/* How It Works Section */}
-    <HowItWorks/>
+      <HowItWorks />
 
       {/* Featured Products Section */}
       <FeaturedProducts />
@@ -33,7 +33,8 @@ const Marketplace = () => {
       <Testimoni />
       {/* FAQs Section */}
       <FAQ />
-    <Contact/>
+      {/* Contact*/}
+      <Contact />
     </div>
   );
 };

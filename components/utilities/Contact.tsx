@@ -60,7 +60,7 @@ const Contact = () => {
   ];
 
   return (
-    <div className="relative flex flex-col items-center w-full bg-gray-900 text-white rounded-t-[25px] py-10 px-6 lg:px-16 mb-19">
+    <div className="relative flex flex-col items-center w-full bg-gray-900 text-white rounded-[25px] py-10 px-6 lg:px-16 mb-19">
       {/* Header */}
       <h2 className="text-3xl md:text-4xl font-semibold text-center mb-4">
         Contact Us
@@ -105,13 +105,7 @@ const Contact = () => {
           globe.
         </p>
       </div>
-      <svg
-        className="absolute bottom-0 left-0 right-0 h-48 text-gray-700 opacity-40"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 1440 320"
-      >
-        <path fill="currentColor" d="M0,288L1440,160L1440,320L0,320Z"></path>
-      </svg>
+     
     </div>
   );
 };
