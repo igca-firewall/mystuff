@@ -10,7 +10,7 @@ export default async function RootLayout({
 }>) {
   return (
     <main className="w-full h-full flex font-inter">
-      {/* <AuthProvider> */}
+      <AuthProvider>
         {/* Fixed Left Sidebar */}
         <Topbar links={sidebarLinks} />
         <aside className="fixed top-0 left-0 h-full w-[250px]">
@@ -25,7 +25,7 @@ export default async function RootLayout({
           </aside>
         </div>{" "}
        
-      {/* </AuthProvider> */}
+      </AuthProvider>
     </main>
   );
 }
