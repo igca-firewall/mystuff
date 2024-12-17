@@ -1,9 +1,41 @@
-import React from 'react'
+"use client";
+import Image from "next/image";
+import { useState } from "react";
+import { motion } from "framer-motion";
+import MarketBanner from "@/components/utilities/Banner";
+import FeaturedProducts from "@/components/utilities/FeaturedProducts";
+import FAQ from "@/components/utilities/FAQ";
+import Testimoni from "@/components/utilities/Testimoni";
+import HowItWorks from "@/components/utilities/HowItWorks";
+import Contact from "@/components/utilities/Contact";
 
-const page = () => {
+const Marketplace = () => {
+  const [selectedCard, setSelectedCard] = useState<number | null>(null);
+  const [showModal, setShowModal] = useState<boolean>(false);
+
+  const handleCardSelection = (card: number) => {
+    setSelectedCard(card);
+    setShowModal(true);
+  };
+
   return (
-    <div>page</div>
-  )
-}
+    <div className="bg-gray-50 text-gray-900 font-sans">
+      {/* Hero Section */}
+      <MarketBanner />
 
-export default page
+      {/* How It Works Section */}
+    <HowItWorks/>
+
+      {/* Featured Products Section */}
+      <FeaturedProducts />
+
+      {/* Customer Testimonials Section */}
+      <Testimoni />
+      {/* FAQs Section */}
+      <FAQ />
+    <Contact/>
+    </div>
+  );
+};
+
+export default Marketplace;

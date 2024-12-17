@@ -10,7 +10,7 @@ const Unauthorized = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b  text-white px-6">
+    <div className="max-h-screen flex flex-col items-center justify-center bg-white  text-white px-6">
       {/* SEO Optimization */}
     
       {/* Lock Icon */}
@@ -19,7 +19,7 @@ const Unauthorized = () => {
       </div>
 
       {/* Error Message */}
-      <h1 className="text-4xl font-extrabold mb-4 text-center tracking-tight">
+      <h1 className="text-4xl font-extrabold mb-4 text-center text-neutral-950 tracking-tight">
         Access Denied
       </h1>
       <p className="text-center text-lg text-gray-400 mb-8 max-w-lg leading-relaxed">

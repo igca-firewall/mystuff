@@ -1,5 +1,4 @@
 import LeftSidebar from "@/components/utilities/LeftSidebar";
-import RightSidebar from "@/components/utilities/RightBar";
 import Topbar from "@/components/utilities/Topbar";
 import { sidebarLinks } from "@/constants";
 import AuthProvider, { useUserContext } from "@/context/AuthContext";
@@ -25,9 +24,7 @@ export default async function RootLayout({
             {/* <DarkModeToggle /> */}
           </aside>
         </div>{" "}
-        <aside className="">
-          <RightSidebar />
-        </aside>
+       
       </AuthProvider>
     </main>
   );

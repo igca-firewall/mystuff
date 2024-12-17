@@ -499,7 +499,7 @@ const SubjectResultUploader: React.FC = () => {
 
                 // Check if the student's ID is present in the fetched scores
                    // Check if the student's ID is present in the fetched scores array
-    const isStudentInResults = scores.some(
+    const isStudentInResults =  scores.some(
       (score) => score.studentId === student.studentId
     );
 
