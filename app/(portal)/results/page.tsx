@@ -1,9 +1,10 @@
 import ResultPage from '@/components/utilities/StudentResult'
+import SubjectResultUploader from '@/components/utilities/View'
 import React from 'react'
 
 const AllResults = () => {
   return (
-    <div><ResultPage/></div>
+    <div><SubjectResultUploader/></div>
   )
 }
 

@@ -134,6 +134,7 @@ const SubjectResultUploader: React.FC = () => {
           session,
           grade: result.grade,
           subject,
+          name: result.studentName,
           createdBy: user.$id,
           total: `${result.sum}`,
         };
@@ -383,13 +384,35 @@ const SubjectResultUploader: React.FC = () => {
             Select Subject
           </label>
           <Select
-            options={[
-              { value: "Math", label: "Math" },
-              { value: "Science", label: "Science" },
-              { value: "English", label: "English" },
-              { value: "History", label: "History" },
-              { value: "Geography", label: "Geography" },
-            ]}
+         options = {[
+          { value: "EnglishLanguage", label: "English Language" },
+          { value: "Mathematics", label: "Mathematics" },
+          { value: "BasicBiology", label: "Basic Biology" },
+          { value: "BasicChemistry", label: "Basic Chemistry" },
+          { value: "BasicPhysics", label: "Basic Physics" },
+          { value: "CulturalCreativeArt", label: "Cultural and Creative Art" },
+          { value: "NationalValueEducation", label: "National Value Education" },
+          { value: "BusinessStudies", label: "Business Studies" },
+          { value: "ICT", label: "ICT" },
+          { value: "History", label: "History" },
+          { value: "IgboLanguage", label: "Igbo Language" },
+          { value: "ChristianReligiousStudies", label: "Christian Religious Studies" },
+          { value: "PrevocationalStudies", label: "Prevocational Studies" },
+          { value: "French", label: "French" },
+          { value: "MoralInstruction", label: "Moral Instruction" },
+          { value: "MorningDrill", label: "Morning Drill" },
+          { value: "Chemistry", label: "Chemistry" },
+          { value: "Physics", label: "Physics" },
+          { value: "Biology", label: "Biology" },
+          { value: "Government", label: "Government" },
+          { value: "CivicEducation", label: "Civic Education" },
+          { value: "Economics", label: "Economics" },
+          { value: "Commerce", label: "Commerce" },
+          { value: "LiteratureInEnglish", label: "Literature-in-English" },
+          { value: "AgriculturalScience", label: "Agricultural Science" },
+          { value: "Geography", label: "Geography" },
+        ]};
+        
             value={subject}
             onChange={(value) => setSubject(value)}
             placeholder="Choose a Subject"

@@ -97,6 +97,7 @@ declare type ResultParams = {
   id?: string | string[];
   firstTest?: string;
   secondTest?: string;
+  name? : string;
   project?: string;
   session?:string;
   bnb?: string;

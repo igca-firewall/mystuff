@@ -21,7 +21,7 @@ const {
 
 export const fetchResult = async ({
   classRoom,
-  id,
+   name,
   term,
   session,
 }: ResultParams) => {
@@ -29,8 +29,7 @@ export const fetchResult = async ({
 
   // Prepare query filters for the `RESULTS_ID` collection
   const resultQueries = [];
-  if (id) resultQueries.push(Query.equal("studentId", id));
-
+  if (name) resultQueries.push(Query.equal("name", name));
   if (classRoom) resultQueries.push(Query.equal("classRoom", classRoom));
   if (term) resultQueries.push(Query.equal("term", term));
 
@@ -185,6 +184,7 @@ export const uploadResults = async ({
   id,
   classRoom,
   term,
+  name,
   grade,
   createdBy,
   subject,
@@ -206,6 +206,7 @@ export const uploadResults = async ({
   createdBy: string;
   subject: string;
   total: string;
+  name: string;
   firstTest: string;
   secondTest: string;
   project: string;
@@ -301,6 +302,7 @@ export const uploadResults = async ({
           session,
           grade,
           exam,
+          name,
           result: scoreId,
         }
       );
@@ -357,6 +359,7 @@ export const uploadResults = async ({
           classRoom,
           session,
           term,
+          name,
           createdBy,
         }
       );
