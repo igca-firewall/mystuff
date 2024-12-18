@@ -1,6 +1,6 @@
 "use client";
 
-import { sidebarLinks } from "@/constants";
+import { rightBarLinks, sidebarLinks } from "@/constants";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -125,6 +125,39 @@ const LeftSidebar = () => {
                 </Link>
               );
             })}
+                 {user.role==="admin" && 
+        
+        rightBarLinks.map((item) => {
+          const isActive =
+            pathname === item.route || pathname?.startsWith(`${item.route}/`);
+          return (
+            <Link
+              href={item.route}
+              key={item.label}
+              className={`rightbar_link items-center ${
+                isActive ? "bg-purple-500 " : "hover:bg-purple-400"
+              }`}
+            >
+              <div className="relative size-4">
+                <Image
+                  src={item.imgURL}
+                  alt={item.label}
+                  width={20}
+                  height={20}
+                  priority
+                  className={`${
+                    isActive
+                      ? "brightness-[3] invert-white"
+                      : "hover:invert-white"
+                  }`}
+                />
+              </div>
+              <p className="text-neutral-600 text-sm dark:text-neutral-100 md:hidden max-lg:block xl:block">
+                {item.label}
+              </p>
+            </Link>
+          );
+        })}
           </div>
           <div className="p-3 items-center">
             <hr />

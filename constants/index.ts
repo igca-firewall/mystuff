@@ -47,7 +47,7 @@ export const rightBarLinks = [
   {
     imgURL: "/images/add-result.png",
     route: "/admin-score",
-    label: "Add Result",
+    label: "Entering Result",
   },
  
  
@@ -84,7 +84,7 @@ export const sidebarLinks = [
   {
     imgURL: "/icons/report.png",
     route: "/results",
-    label: "Results",
+    label: "View Results",
   },
 ];
 export const home = [

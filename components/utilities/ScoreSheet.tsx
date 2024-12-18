@@ -411,7 +411,7 @@ const SubjectResultUploader: React.FC = () => {
           { value: "LiteratureInEnglish", label: "Literature-in-English" },
           { value: "AgriculturalScience", label: "Agricultural Science" },
           { value: "Geography", label: "Geography" },
-        ]};
+        ]}
         
             value={subject}
             onChange={(value) => setSubject(value)}

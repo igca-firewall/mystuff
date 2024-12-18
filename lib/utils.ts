@@ -627,7 +627,7 @@ export const signUpSchema = signInSchema.extend({
   email: z.string().email("Invalid email format"),
   password: z.string().min(6, "Password must be at least 6 characters long"),
 });
-export const generateScratchCardCode = (length = 6): string => {
+export const generateScratchCardCode = (length = 8): string => {
   const characters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
   return Array.from({ length }, () =>
