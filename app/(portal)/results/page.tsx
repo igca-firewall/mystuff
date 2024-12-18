@@ -9,7 +9,7 @@ import ScratchCardOTP from "@/components/utilities/GetCard"
 const AllResults = () => {
 
   const { user } = useUserContext();
-  return <div>{user.role !== "admin" ? <SubjectResultUploader/>: <ScratchCardOTP/>}</div>;
+  return <div>{user.role === "admin" ? <SubjectResultUploader/>: <ScratchCardOTP/>}</div>;
 };
 
 export default AllResults

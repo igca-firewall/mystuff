@@ -65,16 +65,7 @@ export const sidebarLinks = [
     route: "/all-students",
     label: "Students",
   },
-  {
-    imgURL: "/icons/market.svg",
-    route: "/marketplace",
-    label: "Market",
-  },
-  {
-    imgURL: "/icons/stripe.svg",
-    route: "/checkout",
-    label: "Checkout",
-  },
+ 
 
   {
     imgURL: "/icons/add-post.svg",
