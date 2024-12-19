@@ -145,6 +145,7 @@ const SubjectResultUploader: React.FC = () => {
 
           if (uploadResponse) {
             successfulUploads.push(result.studentName);
+            setIsSuccess(true)
             // Clear the result from state if successfully uploaded
             setResults((prevResults) =>
               prevResults.filter((r) => r.studentId !== result.studentId)
@@ -153,6 +154,7 @@ const SubjectResultUploader: React.FC = () => {
             setIsSuccess(true); // Show success popup for this submission
             autoClosePopup(setIsSuccess); // Close success popup after 3 seconds
           } else {
+            setIsFailure(true)
             throw new Error(
               `Failed to upload result for ${result.studentName}`
             );
@@ -200,7 +202,14 @@ const SubjectResultUploader: React.FC = () => {
       setIsProcessing(false); // Reset processing state
     }
   };
+  const closeSuccessPopup = () => {
+    setIsSuccess(false);
+  };
 
+  // Close the failure popup
+  const closeFailurePopup = () => {
+    setIsFailure(false);
+  };
   // Handle adding results for a student
   const handleAddResult = (studentId: string, grades: string[]) => {
     if (grades.some((grade) => grade.trim() === "")) {
@@ -583,6 +592,41 @@ const SubjectResultUploader: React.FC = () => {
           </table>
         )}
       </div>
+      {isSuccess && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white p-6 rounded-lg text-center">
+              <h2 className="text-xl font-semibold text-green-600">Success!</h2>
+              <p className="text-gray-700">
+                Student result have been successfully added.
+              </p>
+              <button
+                onClick={closeSuccessPopup}
+                className="mt-4 bg-purple-500 text-white px-6 py-2 rounded-full"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Failure Popup */}
+
+        {isFailure && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+            <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
+              <h2 className="text-2xl font-semibold text-red-600 mb-4">
+                Oops, something went wrong!
+              </h2>
+              <p className="text-gray-600 mb-6">{errorMessage}</p>
+              <button
+                onClick={closeFailurePopup}
+                className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full transition duration-200 ease-in-out"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
 
       {/* Submit Button */}
       <div className="w-full text-center mt-6">

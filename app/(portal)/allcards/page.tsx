@@ -1,8 +1,9 @@
-"use client"
-import ScratchCards from '@/components/utilities/Scrachcard';
-import { fetchScratchCard } from '@/lib/actions/scratchCard.actions';
-import { useEffect, useState } from 'react';
-
+"use client";
+import ScratchCards from "@/components/utilities/Scrachcard";
+import Unauthorized from "@/components/utilities/Unauthorized";
+import { useUserContext } from "@/context/AuthContext";
+import { fetchScratchCard } from "@/lib/actions/scratchCard.actions";
+import { useEffect, useState } from "react";
 
 const ScratchCardImages = () => {
   const [scratchCards, setScratchCards] = useState<any[]>([]);
@@ -15,13 +16,24 @@ const ScratchCardImages = () => {
 
     fetchData();
   }, []);
-
+  const { user } = useUserContext();
   return (
-    <div className="flex flex-wrap gap-4">
-      {scratchCards.map((card, index) => (
-        <ScratchCards key={index} imageUrl={"/images/th.jpg"} code={card.code} />
-      ))}
+    <div className="flex flex-wrap gap-6 bg-neutral-100">
+      {user?.role === "admin" ? (
+        <div className="flex flex-wrap gap-6">
+          {scratchCards.map((card, index) => (
+            <ScratchCards
+              key={index}
+              frontImageUrl={"/images/t.jpg"}
+              backImageUrl="/images/h.jpg"
+              code={card.code}
+            />
+          ))}
+        </div>
+      ) : (
+        <Unauthorized />
+      )}
     </div>
   );
 };
-export default ScratchCardImages
+export default ScratchCardImages;
