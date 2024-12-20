@@ -64,6 +64,7 @@ const SubjectResultUploader: React.FC = () => {
   const [results, setResults] = useState<Result[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const { user } = useUserContext();
+  const [isStudent ,setIsStudent] =useState(false)
   const [scores, setScores] = useState<Scores[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false); // Processing state for submit button
@@ -83,14 +84,12 @@ const SubjectResultUploader: React.FC = () => {
     if (!session) newErrors.push("Session is required.");
     // Check if all students have grades
     const allGradesEntered = results.every((result) =>
-      result.grades.every((grade) => grade.trim() !== "" ||  grade.trim() < `${101}`)
+      result.grades.every(
+        (grade) => grade.trim() !== "" || grade.trim() < `${101}`
+      )
     );
-    if (!allGradesEntered) {
-      newErrors.push("Please enter grades for all students.");
-    }
+  
 
-    if (results.length === 0)
-      newErrors.push("At least one result must be added.");
 
     setErrors(newErrors);
     return newErrors.length === 0;
@@ -145,7 +144,7 @@ const SubjectResultUploader: React.FC = () => {
 
           if (uploadResponse) {
             successfulUploads.push(result.studentName);
-            setIsSuccess(true)
+            setIsSuccess(true);
             // Clear the result from state if successfully uploaded
             setResults((prevResults) =>
               prevResults.filter((r) => r.studentId !== result.studentId)
@@ -153,8 +152,9 @@ const SubjectResultUploader: React.FC = () => {
             setCompletedSubmissions((prev) => prev + 1);
             setIsSuccess(true); // Show success popup for this submission
             autoClosePopup(setIsSuccess); // Close success popup after 3 seconds
+            setIsStudent(true)
           } else {
-            setIsFailure(true)
+            setIsFailure(true);
             throw new Error(
               `Failed to upload result for ${result.studentName}`
             );
@@ -393,35 +393,43 @@ const SubjectResultUploader: React.FC = () => {
             Select Subject
           </label>
           <Select
-         options = {[
-          { value: "EnglishLanguage", label: "English Language" },
-          { value: "Mathematics", label: "Mathematics" },
-          { value: "BasicBiology", label: "Basic Biology" },
-          { value: "BasicChemistry", label: "Basic Chemistry" },
-          { value: "BasicPhysics", label: "Basic Physics" },
-          { value: "CulturalCreativeArt", label: "Cultural and Creative Art" },
-          { value: "NationalValueEducation", label: "National Value Education" },
-          { value: "BusinessStudies", label: "Business Studies" },
-          { value: "ICT", label: "ICT" },
-          { value: "History", label: "History" },
-          { value: "IgboLanguage", label: "Igbo Language" },
-          { value: "ChristianReligiousStudies", label: "Christian Religious Studies" },
-          { value: "PrevocationalStudies", label: "Prevocational Studies" },
-          { value: "French", label: "French" },
-          { value: "MoralInstruction", label: "Moral Instruction" },
-          { value: "MorningDrill", label: "Morning Drill" },
-          { value: "Chemistry", label: "Chemistry" },
-          { value: "Physics", label: "Physics" },
-          { value: "Biology", label: "Biology" },
-          { value: "Government", label: "Government" },
-          { value: "CivicEducation", label: "Civic Education" },
-          { value: "Economics", label: "Economics" },
-          { value: "Commerce", label: "Commerce" },
-          { value: "LiteratureInEnglish", label: "Literature-in-English" },
-          { value: "AgriculturalScience", label: "Agricultural Science" },
-          { value: "Geography", label: "Geography" },
-        ]}
-        
+            options={[
+              { value: "EnglishLanguage", label: "English Language" },
+              { value: "Mathematics", label: "Mathematics" },
+              { value: "BasicBiology", label: "Basic Biology" },
+              { value: "BasicChemistry", label: "Basic Chemistry" },
+              { value: "BasicPhysics", label: "Basic Physics" },
+              {
+                value: "CulturalCreativeArt",
+                label: "Cultural and Creative Art",
+              },
+              {
+                value: "NationalValueEducation",
+                label: "National Value Education",
+              },
+              { value: "BusinessStudies", label: "Business Studies" },
+              { value: "ICT", label: "ICT" },
+              { value: "History", label: "History" },
+              { value: "IgboLanguage", label: "Igbo Language" },
+              {
+                value: "ChristianReligiousStudies",
+                label: "Christian Religious Studies",
+              },
+              { value: "PrevocationalStudies", label: "Prevocational Studies" },
+              { value: "French", label: "French" },
+              { value: "MoralInstruction", label: "Moral Instruction" },
+              { value: "MorningDrill", label: "Morning Drill" },
+              { value: "Chemistry", label: "Chemistry" },
+              { value: "Physics", label: "Physics" },
+              { value: "Biology", label: "Biology" },
+              { value: "Government", label: "Government" },
+              { value: "CivicEducation", label: "Civic Education" },
+              { value: "Economics", label: "Economics" },
+              { value: "Commerce", label: "Commerce" },
+              { value: "LiteratureInEnglish", label: "Literature-in-English" },
+              { value: "AgriculturalScience", label: "Agricultural Science" },
+              { value: "Geography", label: "Geography" },
+            ]}
             value={subject}
             onChange={(value) => setSubject(value)}
             placeholder="Choose a Subject"
@@ -530,12 +538,11 @@ const SubjectResultUploader: React.FC = () => {
                 );
 
                 // Check if the student's ID is present in the fetched scores
-                   // Check if the student's ID is present in the fetched scores array
-    const isStudentInResults =  scores.some(
-      (score) => score.studentId === student.studentId
-    );
-
-
+                // Check if the student's ID is present in the fetched scores array
+                const isStudentInResults = scores.some(
+                  (score) => score.studentId === student.studentId
+                );
+    {isStudentInResults && setIsStudent(true)}
                 return (
                   <tr
                     key={student.studentId}
@@ -560,9 +567,15 @@ const SubjectResultUploader: React.FC = () => {
                       <td key={idx} className="px-6 py-3">
                         <Input
                           type="number"
-                          placeholder={field === "bnb" ? "B/B": field.split(/(?=[A-Z])/).join(" ")}
+                          placeholder={
+                            field === "bnb"
+                              ? "B/B"
+                              : field.split(/(?=[A-Z])/).join(" ")
+                          }
                           value={studentResult?.grades[idx] || ""}
-                          max={field === "bnb" ? 20 : field === "exam" ? 40 : 10 }
+                          max={
+                            field === "bnb" ? 20 : field === "exam" ? 40 : 10
+                          }
                           min={0}
                           onChange={(e) => {
                             const newGrades = [
@@ -583,7 +596,23 @@ const SubjectResultUploader: React.FC = () => {
                     </td>
                     {/* New Column Showing Yes/No for Student in Results */}
                     <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
-                      {isStudentInResults ? (<Image src="/images/verified-p.png" height={18} width={18} alt="Yes" className="items-center justify-center"/>) : (<Image src="/images/unverified.png" height={18} width={18} alt="Yes" className="items-center justify-center"/>)}
+                      {isStudentInResults || isStudent ? (
+                        <Image
+                          src="/images/verified-p.png"
+                          height={18}
+                          width={18}
+                          alt="Yes"
+                          className="items-center justify-center"
+                        />
+                      ) : (
+                        <Image
+                          src="/images/unverified.png"
+                          height={18}
+                          width={18}
+                          alt="Yes"
+                          className="items-center justify-center"
+                        />
+                      )}
                     </td>
                   </tr>
                 );
@@ -593,40 +622,40 @@ const SubjectResultUploader: React.FC = () => {
         )}
       </div>
       {isSuccess && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white p-6 rounded-lg text-center">
-              <h2 className="text-xl font-semibold text-green-600">Success!</h2>
-              <p className="text-gray-700">
-                Student result have been successfully added.
-              </p>
-              <button
-                onClick={closeSuccessPopup}
-                className="mt-4 bg-purple-500 text-white px-6 py-2 rounded-full"
-              >
-                Close
-              </button>
-            </div>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg text-center">
+            <h2 className="text-xl font-semibold text-green-600">Success!</h2>
+            <p className="text-gray-700">
+              Student result have been successfully added.
+            </p>
+            <button
+              onClick={closeSuccessPopup}
+              className="mt-4 bg-purple-500 text-white px-6 py-2 rounded-full"
+            >
+              Close
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Failure Popup */}
+      {/* Failure Popup */}
 
-        {isFailure && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-            <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
-              <h2 className="text-2xl font-semibold text-red-600 mb-4">
-                Oops, something went wrong!
-              </h2>
-              <p className="text-gray-600 mb-6">{errorMessage}</p>
-              <button
-                onClick={closeFailurePopup}
-                className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full transition duration-200 ease-in-out"
-              >
-                Close
-              </button>
-            </div>
+      {isFailure && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
+            <h2 className="text-2xl font-semibold text-red-600 mb-4">
+              Oops, something went wrong!
+            </h2>
+            <p className="text-gray-600 mb-6">{errorMessage}</p>
+            <button
+              onClick={closeFailurePopup}
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full transition duration-200 ease-in-out"
+            >
+              Close
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
       {/* Submit Button */}
       <div className="w-full text-center mt-6">
