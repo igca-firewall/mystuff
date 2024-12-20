@@ -216,13 +216,13 @@ const SubjectResultUploader: React.FC = () => {
   };
   // Handle adding results for a student
   const handleAddResult = (studentId: string, grades: string[]) => {
-    if (grades.some((grade) => grade.trim() === "")) {
-      setErrors((prevErrors) => [
-        ...prevErrors,
-        "Please enter all test scores for the student.",
-      ]);
-      return;
-    }
+    // if (grades.some((grade) => grade.trim() === "")) {
+    //   setErrors((prevErrors) => [
+    //     ...prevErrors,
+    //     "Please enter all test scores for the student.",
+    //   ]);
+    //   return;
+    // }
 
     const student = students.find((student) => student.studentId === studentId);
     if (student) {
