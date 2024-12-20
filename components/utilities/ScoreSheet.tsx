@@ -83,9 +83,17 @@ const SubjectResultUploader: React.FC = () => {
     if (!term) newErrors.push("Term is required.");
     if (!session) newErrors.push("Session is required.");
     // Check if all students have grades
+    const allGradesEntered = results.every((result) =>
+      result.grades.every(
+        (grade) => grade.trim() !== "" || grade.trim() < `${101}`
+      )
+    );
+    if (!allGradesEntered) {
+      newErrors.push("Please enter grades for all students.");
+    }
 
-  
-
+    if (results.length === 0)
+      newErrors.push("At least one result must be added.");
 
     setErrors(newErrors);
     return newErrors.length === 0;
@@ -208,13 +216,13 @@ const SubjectResultUploader: React.FC = () => {
   };
   // Handle adding results for a student
   const handleAddResult = (studentId: string, grades: string[]) => {
-    // if (grades.some((grade) => grade.trim() === "")) {
-    //   setErrors((prevErrors) => [
-    //     ...prevErrors,
-    //     "Please enter all test scores for the student.",
-    //   ]);
-    //   return;
-    // }
+    if (grades.some((grade) => grade.trim() === "")) {
+      setErrors((prevErrors) => [
+        ...prevErrors,
+        "Please enter all test scores for the student.",
+      ]);
+      return;
+    }
 
     const student = students.find((student) => student.studentId === studentId);
     if (student) {
@@ -538,7 +546,7 @@ const SubjectResultUploader: React.FC = () => {
                 const isStudentInResults = scores.some(
                   (score) => score.studentId === student.studentId
                 );
-    {isStudentInResults && setIsStudent(true)}
+    // {isStudentInResults && setIsStudent(true)}
                 return (
                   <tr
                     key={student.studentId}
