@@ -20,8 +20,6 @@ interface Student {
   classRoom: string;
 }
 
-
-
 const StudentList: React.FC = () => {
   const { user } = useUserContext();
   const [students, setStudents] = useState<Student[]>([]);
@@ -40,7 +38,7 @@ const StudentList: React.FC = () => {
     const fetchStudents = async () => {
       try {
         setIsLoading(true);
-        const limit = 10; // Fetch 100 students per page
+        const limit = 10; // Fetch 10 students per page
         const offset = (currentPage - 1) * limit;
 
         const xed: Models.Document[] = await listAllStudents();
@@ -57,8 +55,6 @@ const StudentList: React.FC = () => {
           setTotalPages(Math.ceil(xed.length / limit));
           setStudents(transformedStudents);
         }
-
-        // Assuming total count of students is 10000, we calculate total pages
       } catch (error) {
         console.error("Error fetching students:", error);
       } finally {
@@ -79,10 +75,10 @@ const StudentList: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-full bg-gray-50">
+      <div className="flex justify-center items-center h-full bg-gray-50 dark:bg-neutral-900">
         <div className="flex flex-col items-center">
           <div className="w-12 h-12 border-4 border-gray-300 border-dotted rounded-full animate-spin"></div>
-          <p className="mt-4 text-gray-600 font-medium">Loading...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300 font-medium">Loading...</p>
         </div>
       </div>
     );
@@ -90,9 +86,9 @@ const StudentList: React.FC = () => {
 
   if (!students.length) {
     return (
-      <div className="flex justify-center items-center h-full bg-gray-50">
+      <div className="flex justify-center items-center h-full bg-gray-50 dark:bg-neutral-900">
         <div className="text-center">
-          <p className="text-lg text-gray-500">No students found</p>
+          <p className="text-lg text-gray-500 dark:text-gray-400">No students found</p>
         </div>
       </div>
     );
@@ -141,28 +137,28 @@ const StudentList: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full bg-gray-50 p-6 sm:p-8 flex flex-col">
-      <div className="flex flex-col flex-1 bg-white p-6 rounded-xl shadow-lg">
-        <h1 className="text-3xl font-semibold text-gray-800 mb-6">
+    <div className="w-full h-full bg-gray-50 dark:bg-neutral-900 p-6 sm:p-8 flex flex-col">
+      <div className="flex flex-col flex-1 bg-white dark:bg-neutral-800 p-6 rounded-xl shadow-lg">
+        <h1 className="text-3xl font-semibold text-gray-800 dark:text-white mb-6">
           Student List
         </h1>
 
         {/* Search and Sort Section */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
           <div className="relative w-full sm:w-2/3">
-            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
             <Input
               type="text"
               placeholder="Search by name, ID, or class..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-purple-500 transition-all duration-300"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm text-gray-700 dark:bg-neutral-700 dark:text-white focus:ring-2 focus:ring-purple-500 transition-all duration-300"
             />
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600">Sort By:</label>
+            <label className="text-sm text-gray-600 dark:text-gray-300">Sort By:</label>
             <select
-              className="border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 focus:ring-2 focus:ring-purple-500"
+              className="border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 dark:bg-neutral-700 dark:text-white focus:ring-2 focus:ring-purple-500"
               value={sortOption}
               onChange={(e) =>
                 setSortOption(e.target.value as "name" | "class")
@@ -175,9 +171,9 @@ const StudentList: React.FC = () => {
         </div>
 
         {/* Table Section */}
-        <div className="overflow-hidden rounded-lg shadow-md border border-gray-200 flex-1">
-          <table className="w-full table-auto text-sm text-gray-700">
-            <thead className="bg-gray-100 text-gray-600">
+        <div className="overflow-hidden rounded-lg shadow-md border border-gray-200 dark:border-neutral-700 flex-1">
+          <table className="w-full table-auto text-sm text-gray-700 dark:text-gray-200">
+            <thead className="bg-gray-100 dark:bg-neutral-800 dark:text-gray-100 text-gray-600">
               <tr>
                 <th className="px-4 py-3 text-left">#</th>
                 <th className="px-4 py-3 text-left">Name</th>
@@ -206,7 +202,7 @@ const StudentList: React.FC = () => {
                 .map((student, index) => (
                   <tr
                     key={student.$id}
-                    className="border-t border-gray-200 hover:bg-gray-50 transition-all duration-300"
+                    className="border-t border-gray-200 hover:bg-gray-50 dark:hover:bg-neutral-700 transition-all duration-300"
                   >
                     <td className="px-4 py-2">{index + 1}</td>
                     <td className="px-4 py-2">{student.name}</td>
@@ -216,13 +212,13 @@ const StudentList: React.FC = () => {
                     {user?.role === "admin" && (
                       <td className="px-4 py-2 flex items-center gap-3">
                         <button
-                          className="text-indigo-600 hover:text-indigo-700 transition-all duration-200"
+                          className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-all duration-200"
                           onClick={() => handleEdit(student.$id)}
                         >
                           <FaEdit />
                         </button>
                         <button
-                          className="text-red-600 hover:text-red-700 transition-all duration-200"
+                          className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-all duration-200"
                           onClick={() => handleDelete(student.$id)}
                         >
                           <FaTrashAlt />
@@ -240,17 +236,17 @@ const StudentList: React.FC = () => {
           <button
             onClick={handlePreviousPage}
             disabled={currentPage === 1}
-            className="px-4 py-2 text-sm text-gray-600 bg-gray-200 rounded-md disabled:opacity-50"
+            className="px-4 py-2 text-sm text-gray-600 bg-gray-200 rounded-md disabled:opacity-50 dark:bg-neutral-700 dark:text-white"
           >
             Previous
           </button>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
             Page {currentPage} of {totalPages}
           </p>
           <button
             onClick={handleNextPage}
             disabled={currentPage === totalPages}
-            className="px-4 py-2 text-sm text-gray-600 bg-gray-200 rounded-md disabled:opacity-50"
+            className="px-4 py-2 text-sm text-gray-600 bg-gray-200 rounded-md disabled:opacity-50 dark:bg-neutral-700 dark:text-white"
           >
             Next
           </button>

@@ -8,6 +8,7 @@ import "./globals.css";
 
 // import AuthProvider from "@/context/AuthContext";
 import { QueryProvider } from "@/lib/react-query/QueryProvider";
+import { ThemeProvider } from "@/components/utilities/ThemeProvider";
 // import AuthChecker from "@/components/AuthChecker";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -33,19 +34,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={` ${inter.variable} ${ibmPlexSerif.variable} `}>
-        {/* <ThemeProvider
+        <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
-        > */}
+        >
           <QueryProvider>
          {children}
           </QueryProvider>
 
           {/* <Toaster /> */}
           {/* <AuthChecker /> */}
-        {/* </ThemeProvider>{" "} */}
+        </ThemeProvider>{" "}
       </body>
     </html>
   );

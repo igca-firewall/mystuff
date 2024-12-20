@@ -8,6 +8,7 @@ import React from "react";
 import Footer from "../utilities/Footer";
 
 import { useUserContext } from "@/context/AuthContext";
+import DarkModeToggle from "./DarkModeToggle";
 
 const LeftSidebar = () => {
   const pathname = usePathname();
@@ -131,6 +132,7 @@ const LeftSidebar = () => {
       <div className="p-3 items-center">
         <hr />
       </div>
+      <DarkModeToggle/>
       <div className="w-full mt-auto">
         <Footer user={user} />
       </div>

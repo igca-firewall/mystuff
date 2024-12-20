@@ -36,7 +36,7 @@ const Select: React.FC<SelectProps> = ({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-left focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+        className="w-full px-4 py-2 bg-white dark:bg-neutral-700 border border-gray-300 rounded-md shadow-sm text-left focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
       >
         {selectedLabel || placeholder}
         <span className="float-right material-icons"><Image src="icons/arrow-down.svg" alt="" height={10} width={10}/> 
@@ -45,7 +45,7 @@ const Select: React.FC<SelectProps> = ({
 
       {/* Dropdown Options */}
       {isOpen && (
-        <ul className="absolute left-0 right-0 mt-2 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto z-10">
+        <ul className="absolute left-0 right-0 mt-2 bg-white border dark:bg-neutral-800 border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto z-10">
           {options.map((option) => (
             <li
               key={option.value}

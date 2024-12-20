@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Input } from "../ui/input";
 import { Models } from "node-appwrite";
 import { getStudentsByClass } from "@/lib/actions/studentsData.actions";
@@ -43,16 +43,24 @@ interface Scores {
   studentId: string;
   // grades: string[];
 }
+const fields = [
+  "firstTest",
+  "secondTest",
+  "assignment",
+  "project",
+  "bnb",
+  "exam",
+];
 // Grading function
 const calculateGrade = (sum: number): string => {
   if (sum >= 80) return "A1";
-  if (sum >= 70) return "B2";
-  if (sum >= 60) return "B3";
-  if (sum >= 50) return "C4";
-  if (sum >= 45) return "C5";
-  if (sum >= 40) return "C6";
-  if (sum >= 35) return "D7";
-  if (sum >= 30) return "E8";
+  if (sum >= 75) return "B2";
+  if (sum >= 70) return "B3";
+  if (sum >= 65) return "C4";
+  if (sum >= 60) return "C5";
+  if (sum >= 50) return "C6";
+  if (sum >= 45) return "D7";
+  if (sum >= 40) return "E8";
   return "F9";
 };
 
@@ -64,7 +72,7 @@ const SubjectResultUploader: React.FC = () => {
   const [results, setResults] = useState<Result[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const { user } = useUserContext();
-  const [isStudent ,setIsStudent] =useState(false)
+  const [isStudent, setIsStudent] = useState(false);
   const [scores, setScores] = useState<Scores[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false); // Processing state for submit button
@@ -75,6 +83,34 @@ const SubjectResultUploader: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState(""); // State for storing error message
   const [completedSubmissions, setCompletedSubmissions] = useState(0);
   const [total, setTotal] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const [activeRow, setActiveRow] = useState(0); // Tracks the active row
+  const [activeColumn, setActiveColumn] = useState(0); // Tracks the active column (field)
+  // const inputRefs = useRef([]);
+  
+  const nextField = () => {
+    if (activeColumn < fields.length - 1) {
+      setActiveColumn(activeColumn + 1);
+      inputRefs.current[activeColumn + 1]?.focus(); // Focus next field in the same row
+    }
+  };
+  
+  const prevField = () => {
+    if (activeColumn > 0) {
+      setActiveColumn(activeColumn - 1);
+      inputRefs.current[activeColumn - 1]?.focus(); // Focus previous field in the same row
+    }
+  };
+  
+  const handleKeyPress = (e) => {
+    if (e.key === "ArrowRight") {
+      nextField();
+    } else if (e.key === "ArrowLeft") {
+      prevField();
+    }
+  };
+  
   const validateForm = (): boolean => {
     const newErrors: string[] = [];
 
@@ -156,7 +192,7 @@ const SubjectResultUploader: React.FC = () => {
             setCompletedSubmissions((prev) => prev + 1);
             setIsSuccess(true); // Show success popup for this submission
             autoClosePopup(setIsSuccess); // Close success popup after 3 seconds
-            setIsStudent(true)
+            setIsStudent(true);
           } else {
             setIsFailure(true);
             throw new Error(
@@ -208,6 +244,17 @@ const SubjectResultUploader: React.FC = () => {
   };
   const closeSuccessPopup = () => {
     setIsSuccess(false);
+  };
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const handleKeyDown = (e: React.KeyboardEvent, idx: number) => {
+    if (e.key === "End" && idx < fields.length - 1) {
+      // Move focus to the next input
+      inputRefs.current[idx + 1]?.focus();
+    } else if (e.key === "ArrowLeft" && idx > 0) {
+      // Move focus to the previous input
+      inputRefs.current[idx - 1]?.focus();
+    }
   };
 
   // Close the failure popup
@@ -503,7 +550,6 @@ const SubjectResultUploader: React.FC = () => {
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
                   Student Name
                 </th>
-            
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
                   {`1st Summarize Test (10%)`}
                 </th>
@@ -544,7 +590,7 @@ const SubjectResultUploader: React.FC = () => {
                 const isStudentInResults = scores.some(
                   (score) => score.studentId === student.studentId
                 );
-    // {isStudentInResults && setIsStudent(true)}
+                // {isStudentInResults && setIsStudent(true)}
                 return (
                   <tr
                     key={student.studentId}
@@ -553,41 +599,34 @@ const SubjectResultUploader: React.FC = () => {
                     <td className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
                       {student.name}
                     </td>
-              
 
                     {/* Grade Inputs */}
-                    {[
-                      "firstTest",
-                      "secondTest",
-                      "assignment",
-                      "project",
-                      "bnb",
-                      "exam",
-                    ].map((field, idx) => (
-                      <td key={idx} className="px-6 py-3">
-                        <Input
-                          type="number"
-                          placeholder={
-                            field === "bnb"
-                              ? "B/B"
-                              : field.split(/(?=[A-Z])/).join(" ")
-                          }
-                          value={studentResult?.grades[idx] || ""}
-                          max={
-                            field === "bnb" ? 20 : field === "exam" ? 40 : 10
-                          }
-                          min={0}
-                          onChange={(e) => {
-                            const newGrades = [
-                              ...(studentResult?.grades || []),
-                            ];
-                            newGrades[idx] = e.target.value;
-                            handleAddResult(student.studentId, newGrades);
-                          }}
-                          className="  w-full text-sm text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-purple-500 focus:border-purple-500"
-                        />
-                      </td>
-                    ))}
+                    {fields.map((field, idx) => (
+        // <tr key={idx}>
+          <td className="px-6 py-3">
+            <Input
+              type="number"
+              placeholder={
+                field === "bnb"
+                  ? "B/B"
+                  : field.split(/(?=[A-Z])/).join(" ")
+              }
+              value={studentResult?.grades[idx] || ""}
+              max={field === "bnb" ? 20 : field === "exam" ? 40 : 10}
+              min={0}
+              onChange={(e) => {
+                const newGrades = [...(studentResult?.grades || [])];
+                newGrades[idx] = e.target.value;
+                handleAddResult(student.studentId, newGrades);
+              }}
+              onKeyDown={(e) => handleKeyPress(e, idx)} // Handle key presses for navigation
+              ref={(el) => { inputRefs.current[idx] = el; }} // Store refs for each input
+              className="w-full text-sm text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-purple-500 focus:border-purple-500"
+            />
+          </td>
+        // </tr>
+      ))}
+
                     <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
                       {studentResult ? studentResult.sum : "-"}
                     </td>
