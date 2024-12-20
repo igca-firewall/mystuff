@@ -503,9 +503,7 @@ const SubjectResultUploader: React.FC = () => {
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
                   Student Name
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Student ID
-                </th>
+            
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
                   {`1st Summarize Test (10%)`}
                 </th>
@@ -555,9 +553,7 @@ const SubjectResultUploader: React.FC = () => {
                     <td className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
                       {student.name}
                     </td>
-                    <td className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {student.studentId}
-                    </td>
+              
 
                     {/* Grade Inputs */}
                     {[
