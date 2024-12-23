@@ -98,7 +98,7 @@ const LeftSidebar = () => {
                     priority
                     className={`${
                       isActive
-                        ? "brightness-[3] invert-white"
+                        ? " invert-white"
                         : "hover:invert-white"
                     }`}
                   />
