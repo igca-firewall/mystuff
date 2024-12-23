@@ -9,6 +9,7 @@ import Footer from "../utilities/Footer";
 import { useUserContext } from "@/context/AuthContext";
 import { Sheet, SheetTrigger, SheetContent } from '../ui/sheet';
 import { HiMenu } from 'react-icons/hi'; // Hamburger icon for the trigger button
+import DarkModeToggle from "./DarkModeToggle";
 
 const LeftSidebar = () => {
   const pathname = usePathname();
@@ -160,6 +161,7 @@ const LeftSidebar = () => {
         })}
           </div>
           <div className="p-3 items-center">
+          <DarkModeToggle/>
             <hr />
           </div>
           <div className="w-full mt-auto">

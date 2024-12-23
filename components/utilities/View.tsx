@@ -1,4 +1,6 @@
+import { fetchCompiledResults } from "@/lib/actions/rexults.actions";
 import { useEffect, useState } from "react";
+
 interface Scores {
   $id: string;
   firstTest: string;
@@ -16,36 +18,31 @@ interface Scores {
   studentId: string;
   // grades: string[];
 }
+
 const CompiledResults = () => {
   const [data, setData] = useState<Scores[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-  const fetchCompiledResults = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+    const loadCompiledResults = async () => { // Renamed function
+      try {
+        setLoading(true);
+        setError(null);
 
-      // Assuming `fetchCompiledResults` is a function to get data
-      const response = await fetchCompiledResults(); 
+        // Assuming `fetchCompiledResults` is imported to fetch data
+        const response = await fetchCompiledResults(); 
 
-      // Validate response or results
-      // if (!response || !Array.isArray(response)) {
-      //   throw new Error("Invalid response from the server");
-      // }
+        setData(response);
+      } catch (err: any) {
+        setError(err.message || "An error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      setData(response);
-    } catch (err: any) {
-      setError(err.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchCompiledResults();
-}, []);
-
+    loadCompiledResults();
+  }, []);
 
   if (loading) {
     return <div>Loading compiled results...</div>;
@@ -72,9 +69,16 @@ const CompiledResults = () => {
             <tr key={result.$id}>
               <td className="px-4 py-2 border">{result.studentId}</td>
               <td className="px-4 py-2 border">{result.total}</td>
-              <td className="px-4 py-2 border">{result.average.toFixed(2)}</td>
+              <td className="px-4 py-2 border">{(parseFloat(result.total) / 6).toFixed(2)}</td>
               <td className="px-4 py-2 border">
-                {result.scores.join(", ")}
+                {[
+                  result.firstTest,
+                  result.secondTest,
+                  result.bnb,
+                  result.project,
+                  result.assignment,
+                  result.exam,
+                ].join(", ")}
               </td>
             </tr>
           ))}

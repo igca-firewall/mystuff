@@ -106,7 +106,7 @@ const Topbar: React.FC<xee> = ({ links}) => {
                 alt=""
                 width={20}
                 height={3}
-                className="dark:invert-white w-[100px] h-[70px]"
+                className="w-[100px] h-[70px]"
                 layout="responsive"
                 quality={90}
               />

@@ -30,9 +30,7 @@ const Footer = ({ user, type = "desktop" }: FooterProps) => {
         {/* User Info Section */}
         <div className="flex flex-col justify-center">
           <div
-            className={
-               "footer_email"
-            }
+            className=""
           >
             <h1 className="text-sm font-semibold text-gray-700 dark:text-neutral-300 truncate">
               {user?.name}
