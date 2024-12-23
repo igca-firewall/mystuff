@@ -63,7 +63,7 @@ const LeftSidebar = () => {
           ref={sheetRef}
            position="right"
           size="lg"
-          className="bg-gray-100 p-6 overflow-y-auto"
+          className="bg-gray-100 dark:bg-neutral-800 p-6 overflow-y-auto"
           onTouchStart={handleTouchStart} 
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}

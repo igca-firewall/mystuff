@@ -72,11 +72,14 @@ const SubjectResultUploader: React.FC = () => {
   const [results, setResults] = useState<Result[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const { user } = useUserContext();
-  const [isStudent, setIsStudent] = useState(false);
+  const [isStudent, setIsStudent] = useState<Scores[]>([]);
   const [scores, setScores] = useState<Scores[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false); // Processing state for submit button
   const [errors, setErrors] = useState<string[]>([]); // Error state
+  const [inputValue, setInputValue] = useState("");
+  const [showPopup, setShowPopup] = useState(false);
+  const [values, setValues] = useState({});
   // New state for processing status
   const [isSuccess, setIsSuccess] = useState(false); // State for success popup
   const [isFailure, setIsFailure] = useState(false); // State for failure popup
@@ -88,21 +91,26 @@ const SubjectResultUploader: React.FC = () => {
   const [activeRow, setActiveRow] = useState(0); // Tracks the active row
   const [activeColumn, setActiveColumn] = useState(0); // Tracks the active column (field)
   // const inputRefs = useRef([]);
-  
+
   const nextField = () => {
     if (activeColumn < fields.length - 1) {
       setActiveColumn(activeColumn + 1);
       inputRefs.current[activeColumn + 1]?.focus(); // Focus next field in the same row
     }
   };
-  
+  const closePopup = () => {
+    setShowPopup(false);
+  };
   const prevField = () => {
     if (activeColumn > 0) {
       setActiveColumn(activeColumn - 1);
       inputRefs.current[activeColumn - 1]?.focus(); // Focus previous field in the same row
     }
   };
-  
+  const max = fields.map((field) => {
+    return field === "bnb" ? 20 : field === "exam" ? 40 : 10; // Adjust max values accordingly
+  });
+
   const handleKeyPress = (e) => {
     if (e.key === "ArrowRight") {
       nextField();
@@ -110,7 +118,7 @@ const SubjectResultUploader: React.FC = () => {
       prevField();
     }
   };
-  
+
   const validateForm = (): boolean => {
     const newErrors: string[] = [];
 
@@ -192,7 +200,7 @@ const SubjectResultUploader: React.FC = () => {
             setCompletedSubmissions((prev) => prev + 1);
             setIsSuccess(true); // Show success popup for this submission
             autoClosePopup(setIsSuccess); // Close success popup after 3 seconds
-            setIsStudent(true);
+            // setIsStudent(true);
           } else {
             setIsFailure(true);
             throw new Error(
@@ -306,11 +314,12 @@ const SubjectResultUploader: React.FC = () => {
   };
   const currentYear = new Date().getFullYear();
   const nextYear = currentYear + 1;
-
   useEffect(() => {
     const fetchStudents = async () => {
       try {
         setIsLoading(true);
+        setStudents([]); // Clear students immediately before fetching
+        
         const xed: Models.Document[] = await getStudentsByClass({ classRoom });
         if (xed) {
           const transformedStudents = xed.map((student) => ({
@@ -318,6 +327,7 @@ const SubjectResultUploader: React.FC = () => {
             name: student.name,
             studentId: student.studentId,
           }));
+  
           setStudents(transformedStudents);
           console.log(transformedStudents, students);
         }
@@ -327,25 +337,26 @@ const SubjectResultUploader: React.FC = () => {
         setIsLoading(false);
       }
     };
-
+  
     if (classRoom && term && session && subject) {
       fetchStudents();
     }
   }, [classRoom, term, session, subject]);
+  
   useEffect(() => {
     const fetchStudentsScore = async () => {
       try {
         setIsLoading(true);
-        // const studentIds = students.map((student) => student.studentId); // Get array of IDs
-
+        setScores([]); // Clear scores immediately before fetching
+        setIsStudent([]); // Clear isStudent immediately before fetching
+        
         const particles = await fetchResultWithSubject({
           classRoom,
-          // id: studentIds, // Pass array directly
           term,
           session,
           subject,
         });
-
+  
         if (particles) {
           const transformedScores = particles.map((scores) => ({
             $id: scores.$id,
@@ -362,18 +373,25 @@ const SubjectResultUploader: React.FC = () => {
             term: scores.term,
             createdAt: scores.$createdAt,
             studentId: scores.studentId,
-
-            // grades: [
-            //   scores.firstTest,
-            //   scores.secondTest,
-            //   scores.bnb,
-            //   scores.project,
-            //   scores.assignment,
-            //   scores.exam,
-            // ],
+            grades: [
+              scores.firstTest,
+              scores.secondTest,
+              scores.bnb,
+              scores.project,
+              scores.assignment,
+              scores.exam,
+            ],
           }));
           setScores(transformedScores);
-          console.log("Fetched scores", transformedScores);
+          setIsStudent(transformedScores);
+          console.log(
+            "Transformed scores",
+            transformedScores,
+            "particles😋😋😉😉",
+            particles,
+            "Student",
+            students
+          );
         }
       } catch (error) {
         console.error("Error fetching students:", error);
@@ -381,23 +399,12 @@ const SubjectResultUploader: React.FC = () => {
         setIsLoading(false);
       }
     };
-
+  
     if (classRoom && subject && session && term && students.length > 0) {
       fetchStudentsScore();
     }
   }, [classRoom, subject, session, term, students]);
-  if (user?.role !== "admin") {
-    return (
-      <div className="flex items-center justify-center h-full bg-red-100 p-6 rounded-lg shadow-lg">
-        <div className="text-center text-red-600 font-semibold text-xl md:text-2xl">
-          <h2>You do not have access to this page.</h2>
-          <p className="mt-2 text-gray-600">
-            Please contact the administrator for assistance.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  
   return (
     <div className="w-full h-full flex flex-col items-center justify-start bg-gray-50 dark:bg-neutral-900 p-8">
       <h2 className="text-3xl font-semibold mb-8 text-gray-800 dark:text-gray-200 transition duration-200">
@@ -445,41 +452,41 @@ const SubjectResultUploader: React.FC = () => {
           </label>
           <Select
             options={[
-              { value: "EnglishLanguage", label: "English Language" },
-              { value: "Mathematics", label: "Mathematics" },
+              { value: "AgriculturalScience", label: "Agricultural Science" },
               { value: "BasicBiology", label: "Basic Biology" },
               { value: "BasicChemistry", label: "Basic Chemistry" },
               { value: "BasicPhysics", label: "Basic Physics" },
-              {
-                value: "CulturalCreativeArt",
-                label: "Cultural and Creative Art",
-              },
-              {
-                value: "NationalValueEducation",
-                label: "National Value Education",
-              },
+              { value: "Biology", label: "Biology" },
               { value: "BusinessStudies", label: "Business Studies" },
-              { value: "ICT", label: "ICT" },
-              { value: "History", label: "History" },
-              { value: "IgboLanguage", label: "Igbo Language" },
+              { value: "Chemistry", label: "Chemistry" },
               {
                 value: "ChristianReligiousStudies",
                 label: "Christian Religious Studies",
               },
-              { value: "PrevocationalStudies", label: "Prevocational Studies" },
+              { value: "CivicEducation", label: "Civic Education" },
+              { value: "Commerce", label: "Commerce" },
+              {
+                value: "CulturalCreativeArt",
+                label: "Cultural and Creative Art",
+              },
+              { value: "Economics", label: "Economics" },
+              { value: "EnglishLanguage", label: "English Language" },
               { value: "French", label: "French" },
+              { value: "Geography", label: "Geography" },
+              { value: "Government", label: "Government" },
+              { value: "History", label: "History" },
+              { value: "ICT", label: "ICT" },
+              { value: "IgboLanguage", label: "Igbo Language" },
+              { value: "LiteratureInEnglish", label: "Literature-in-English" },
+              { value: "Mathematics", label: "Mathematics" },
               { value: "MoralInstruction", label: "Moral Instruction" },
               { value: "MorningDrill", label: "Morning Drill" },
-              { value: "Chemistry", label: "Chemistry" },
+              {
+                value: "NationalValueEducation",
+                label: "National Value Education",
+              },
               { value: "Physics", label: "Physics" },
-              { value: "Biology", label: "Biology" },
-              { value: "Government", label: "Government" },
-              { value: "CivicEducation", label: "Civic Education" },
-              { value: "Economics", label: "Economics" },
-              { value: "Commerce", label: "Commerce" },
-              { value: "LiteratureInEnglish", label: "Literature-in-English" },
-              { value: "AgriculturalScience", label: "Agricultural Science" },
-              { value: "Geography", label: "Geography" },
+              { value: "PrevocationalStudies", label: "Prevocational Studies" },
             ]}
             value={subject}
             onChange={(value) => setSubject(value)}
@@ -557,16 +564,16 @@ const SubjectResultUploader: React.FC = () => {
                   {`2nd Summarize Test (10%)`}
                 </th>{" "}
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {`Assignment (10%)`}
+                  {`Assignment (10%)    `}
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {` Midterm Project (10%)`}
+                  {` Midterm Project (10%)    `}
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
                   {`Book and Beyond (20%)`}
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {`Exam (40%)`}
+                  {`Examination (40%)`}
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
                   Sum
@@ -581,15 +588,24 @@ const SubjectResultUploader: React.FC = () => {
             </thead>
             <tbody>
               {students.map((student) => {
+                // Fetch the latest student's result from `results` array
                 const studentResult = results.find(
                   (result) => result.studentId === student.studentId
                 );
 
-                // Check if the student's ID is present in the fetched scores
-                // Check if the student's ID is present in the fetched scores array
-                const isStudentInResults = scores.some(
-                  (score) => score.studentId === student.studentId
+                // Filter the students based on the latest `scores` data
+                const filteredStudents = students.filter((student) =>
+                  scores.some((score) => score.studentId === student.studentId)
                 );
+
+                // Ensure you are always working with the most recent `filteredStudents`
+                const isVerified = filteredStudents.some(
+                  (filteredStudent) =>
+                    filteredStudent.studentId === student.studentId
+                );
+
+                // You can now use `isVerified` to render the correct icon for each student
+
                 // {isStudentInResults && setIsStudent(true)}
                 return (
                   <tr
@@ -602,30 +618,36 @@ const SubjectResultUploader: React.FC = () => {
 
                     {/* Grade Inputs */}
                     {fields.map((field, idx) => (
-        // <tr key={idx}>
-          <td className="px-6 py-3">
-            <Input
-              type="number"
-              placeholder={
-                field === "bnb"
-                  ? "B/B"
-                  : field.split(/(?=[A-Z])/).join(" ")
-              }
-              value={studentResult?.grades[idx] || ""}
-              max={field === "bnb" ? 20 : field === "exam" ? 40 : 10}
-              min={0}
-              onChange={(e) => {
-                const newGrades = [...(studentResult?.grades || [])];
-                newGrades[idx] = e.target.value;
-                handleAddResult(student.studentId, newGrades);
-              }}
-              onKeyDown={(e) => handleKeyPress(e, idx)} // Handle key presses for navigation
-              ref={(el) => { inputRefs.current[idx] = el; }} // Store refs for each input
-              className="w-full text-sm text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-purple-500 focus:border-purple-500"
-            />
-          </td>
-        // </tr>
-      ))}
+                      // <tr key={idx}>
+                      <td className="px-6 py-3">
+                        <Input
+                          type="number"
+                          placeholder={
+                            field === "bnb"
+                              ? "B/B"
+                              : field.split(/(?=[A-Z])/).join(" ")
+                          }
+                          value={studentResult?.grades[idx] || ""}
+                          max={
+                            field === "bnb" ? 20 : field === "exam" ? 40 : 10
+                          }
+                          min={0}
+                          onChange={(e) => {
+                            const newGrades = [
+                              ...(studentResult?.grades || []),
+                            ];
+                            newGrades[idx] = e.target.value;
+                            handleAddResult(student.studentId, newGrades);
+                          }}
+                          onKeyDown={(e) => handleKeyPress(e)} // Handle key presses for navigation
+                          ref={(el) => {
+                            inputRefs.current[idx] = el;
+                          }} // Store refs for each input
+                          className="w-full text-sm text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-purple-500 focus:border-purple-500"
+                        />
+                      </td>
+                      // </tr>
+                    ))}
 
                     <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
                       {studentResult ? studentResult.sum : "-"}
@@ -635,23 +657,28 @@ const SubjectResultUploader: React.FC = () => {
                     </td>
                     {/* New Column Showing Yes/No for Student in Results */}
                     <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
-                      {isStudentInResults || isStudent ? (
-                        <Image
-                          src="/images/verified-p.png"
-                          height={18}
-                          width={18}
-                          alt="Yes"
-                          className="items-center justify-center"
-                        />
-                      ) : (
-                        <Image
-                          src="/images/unverified.png"
-                          height={18}
-                          width={18}
-                          alt="Yes"
-                          className="items-center justify-center"
-                        />
-                      )}
+                      <div
+                        key={student.studentId}
+                        className="flex items-center justify-center"
+                      >
+                        {isVerified ? (
+                          <Image
+                            src="/images/verified-p.png"
+                            height={18}
+                            width={18}
+                            alt="Verified"
+                            className="mr-1"
+                          />
+                        ) : (
+                          <Image
+                            src="/images/unverified.png"
+                            height={18}
+                            width={18}
+                            alt="Unverified"
+                            className="mr-1"
+                          />
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -712,6 +739,17 @@ const SubjectResultUploader: React.FC = () => {
           {isProcessing ? "Submitting..." : "Submit Results"}
         </button>
       </div>
+      {showPopup && (
+        <div className="absolute top-0 left-0 p-4 bg-red-500 text-white rounded-md shadow-lg">
+          <span>You have exceeded the maximum value of {max}!</span>
+          <button
+            onClick={closePopup}
+            className="ml-4 text-gray-200 hover:text-white"
+          >
+            Close
+          </button>
+        </div>
+      )}
     </div>
   );
 };

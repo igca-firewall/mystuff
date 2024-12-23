@@ -120,6 +120,30 @@ export const deleteStudent = async ({ id }: { id: string }) => {
     console.log("Error deleting the selected User:", error);
   }
 };
+export const editStudent = async ({
+  id,
+  updates,
+}: {
+  id: string;
+  updates: Record<string, any>;
+}) => {
+  const { database } = await createAdminClient();
+
+  try {
+    const updatedStudent = await database.updateDocument(
+      DATABASE_ID!,
+      STUDENTS_COLLECTION_ID!,
+      id,
+      updates
+    );
+
+    return parseStringify(updatedStudent);
+  } catch (error) {
+    console.error("Error updating student:", error);
+    throw new Error("Failed to update student.");
+  }
+};
+
 export async function getStudentById(id: string) {
   try {
     const { database } = await createAdminClient();

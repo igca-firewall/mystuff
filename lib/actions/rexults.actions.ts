@@ -7,6 +7,7 @@ import { parseStringify } from "../utils";
 const {
   //     APPWRITE_POST_COLLECTION_ID: POST_COLLECTION_ID,
   //     APPWRITE_STORAGE_ID: STORAGE_ID,
+  APPWRITE_COMPILED_ID : COMPILED_RESULTS_ID,
   APPWRITE_DATABASE_ID: DATABASE_ID,
   //     NEXT_PUBLIC_APPWRITE_ENDPOINT: ENDPOINT,
   //     NEXT_PUBLIC_APPWRITE_PROJECT: PROJECT_ID,
@@ -21,7 +22,7 @@ const {
 
 export const fetchResult = async ({
   classRoom,
-   name,
+  name,
   term,
   session,
 }: ResultParams) => {
@@ -87,53 +88,49 @@ export const fetchResultWithSubject = async ({
   session,
 }: ResultParams & { subject?: string }) => {
   const { database } = await createAdminClient();
-
+  const limit = 10000;
   // Prepare query filters for the `RESULTS_ID` collection
-  const resultQueries = [];
-  if (session) resultQueries.push(Query.equal("session", session));
-  if (classRoom) resultQueries.push(Query.equal("classRoom", classRoom));
-  if (term) resultQueries.push(Query.equal("term", term));
-  // if (id || Array.isArray(id)) resultQueries.push(Query.equal("studentId", id)); // Handle array of IDs
 
   try {
-    // Fetch results from the `RESULTS_ID` collection
-    const resultData = await database.listDocuments(
-      DATABASE_ID!,
-      RESULTS_ID!,
-      resultQueries
-    );
+    // // Fetch results from the `RESULTS_ID` collection
+    // const resultData = await database.listDocuments(
+    //   DATABASE_ID!,
+    //   RESULTS_ID!,
+    //   resultQueries
+    // );
 
-    if (
-      !resultData ||
-      !resultData.documents ||
-      resultData.documents.length === 0
-    ) {
-      console.log("No results found:", resultData);
-      return false;
-    }
+    // if (
+    //   !resultData ||
+    //   !resultData.documents ||
+    //   resultData.documents.length === 0
+    // ) {
+    //   console.log("No results found:", resultData);
+    //   return false;
+    // }
 
-    console.log(
-      "Results metadata retrieved successfully:",
-      resultData.documents
-    );
+    // console.log(
+    //   "Results metadata retrieved successfully:",
+    //   resultData.documents
+    // );
     const scoresQuery = [];
     if (session) scoresQuery.push(Query.equal("session", session));
     if (subject) scoresQuery.push(Query.equal("subject", subject));
     if (term) scoresQuery.push(Query.equal("term", term));
+    if (limit) scoresQuery.push(Query.limit(limit));
     // if (id || Array.isArray(id)) scoresQuery.push(Query.equal("studentId", id)); // Handle array of IDs
 
     // Fetch scores for the selected subject in each result document
-    const combinedResults = await database.listDocuments(
+    const scores = await database.listDocuments(
       DATABASE_ID!,
       SCORES_ID!,
       scoresQuery
     );
-  
+
     console.log(
       "Combined results with scores retrieved successfully 😁😁😁",
-      combinedResults
+      scores
     );
-    return parseStringify(combinedResults.documents);
+    return parseStringify(scores.documents);
   } catch (error) {
     console.error("Error fetching results and scores:", error);
     return false;
@@ -375,5 +372,102 @@ export const uploadResults = async ({
   } catch (error) {
     console.error("Error uploading results:", error);
     return false;
+  }
+};
+export const compileResult = async () => {
+  const { database } = await createAdminClient();
+  const limit = 100000;
+
+  try {
+    // Step 1: Fetch all documents from the source collection
+    const results = await database.listDocuments(
+      DATABASE_ID!,
+      RESULTS_ID!,
+      [
+        Query.limit(limit),    // Limit the number of students per request
+       // Skip the records we have already fetched
+      ]
+    );
+
+    if (!results.documents || results.documents.length === 0) {
+      console.log("No results found.");
+      return;
+    }
+
+    // Step 2: Group scores by studentId
+    const groupedResults: Record<string, { scores: number[] }> = {};
+
+    results.documents.forEach((doc) => {
+      const { studentId, score } = doc;
+
+      if (!groupedResults[studentId]) {
+        groupedResults[studentId] = { scores: [] };
+      }
+
+      groupedResults[studentId].scores.push(score);
+    });
+
+    // Step 3: Calculate total and average for each studentId
+    const compiledData = Object.entries(groupedResults).map(
+      ([studentId, data]) => {
+        const total = data.scores.reduce((sum, score) => sum + score, 0);
+        const average = total / data.scores.length;
+
+        return {
+          studentId,
+          total,
+          average,
+          scores: data.scores,
+        };
+      }
+    );
+
+    // Step 4: Upload the compiled results to another collection
+    const uploadPromises = compiledData.map((data) =>
+      database.createDocument(
+        DATABASE_ID!,
+        COMPILED_RESULTS_ID!,
+        ID.unique(), // The destination collection ID
+        {
+          studentId: data.studentId,
+          total: data.total,
+          average: data.average,
+          scores: data.scores,
+         
+        }
+      )
+    );
+
+    await Promise.all(uploadPromises);
+
+    console.log("Compiled results successfully uploaded.");
+  } catch (error) {
+    console.error("Error compiling results:", error);
+  }
+};
+export const fetchCompiledResults = async () => {
+  const { database } = await createAdminClient();
+  const limit = 100;
+
+  try {
+    // Fetch all compiled results
+    const response = await database.listDocuments(
+      DATABASE_ID!,
+      COMPILED_RESULTS_ID!,
+      [
+        Query.limit(limit),    // Limit the number of students per request
+     // Skip the records we have already fetched
+      ]
+    );
+
+    if (!response.documents || response.documents.length === 0) {
+      console.log("No compiled results found.");
+      return [];
+    }
+
+    return response.documents;
+  } catch (error) {
+    console.error("Error fetching compiled results:", error);
+    throw new Error("Failed to fetch compiled results.");
   }
 };

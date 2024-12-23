@@ -3,7 +3,9 @@ import { Input } from "@/components/ui/input";
 import { useUserContext } from "@/context/AuthContext";
 import {
   deleteStudent,
+  editStudent,
   listAllStudents,
+  // updateStudent,
 } from "@/lib/actions/studentsData.actions";
 import { Models } from "node-appwrite";
 import React, { useState, useEffect } from "react";
@@ -26,7 +28,8 @@ const StudentList: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [sortOption, setSortOption] = useState<"name" | "class">("name");
   const [searchQuery, setSearchQuery] = useState<string>("");
-
+  const [isSuccess, setIsSuccess] = useState(false); // State for success popup
+  const [isFailure, setIsFailure] = useState(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
 
@@ -34,6 +37,20 @@ const StudentList: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
 
+  // Edit form state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editStudentData, setEditStudentData] = useState<Student | null>(null);
+  const autoClosePopup = (
+    setState: React.Dispatch<React.SetStateAction<boolean>>
+  ) => {
+    setTimeout(() => setState(false), 3000);
+  };
+  const closeSuccessPopup = () => {
+    setIsSuccess(false);
+  };
+  const closeFailurePopup = () => {
+    setIsFailure(false);
+  };
   useEffect(() => {
     const fetchStudents = async () => {
       try {
@@ -78,7 +95,9 @@ const StudentList: React.FC = () => {
       <div className="flex justify-center items-center h-full bg-gray-50 dark:bg-neutral-900">
         <div className="flex flex-col items-center">
           <div className="w-12 h-12 border-4 border-gray-300 border-dotted rounded-full animate-spin"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300 font-medium">Loading...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300 font-medium">
+            Loading...
+          </p>
         </div>
       </div>
     );
@@ -88,15 +107,13 @@ const StudentList: React.FC = () => {
     return (
       <div className="flex justify-center items-center h-full bg-gray-50 dark:bg-neutral-900">
         <div className="text-center">
-          <p className="text-lg text-gray-500 dark:text-gray-400">No students found</p>
+          <p className="text-lg text-gray-500 dark:text-gray-400">
+            No students found
+          </p>
         </div>
       </div>
     );
   }
-
-  const handleEdit = (studentId: string) => {
-    console.log("Edit student", studentId);
-  };
 
   const handleDelete = (studentId: string) => {
     setStudentToDelete(studentId);
@@ -136,6 +153,40 @@ const StudentList: React.FC = () => {
     }
   };
 
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+  
+    if (editStudentData) {
+      const { $id, ...updates } = editStudentData; // Extracting id and updates
+  
+      try {
+        const response = await editStudent({ id: $id, updates }); // API call
+  
+        if (response) {
+          // Show success popup
+          setIsSuccess(true);
+          autoClosePopup(setIsSuccess); // Automatically close success popup after 3 seconds
+  
+          // Update the local state with the modified student data
+          setStudents((prevStudents) =>
+            prevStudents.map((student) =>
+              student.$id === $id ? { ...student, ...updates } : student
+            )
+          );
+  
+          setIsEditModalOpen(false); // Close the edit modal
+        }
+      } catch (error) {
+        console.error("Error updating student:", error);
+  
+        // Show failure popup
+        setIsFailure(true);
+        autoClosePopup(setIsFailure); // Automatically close failure popup after 3 seconds
+      }
+    }
+  };
+  
+
   return (
     <div className="w-full h-full bg-gray-50 dark:bg-neutral-900 p-6 sm:p-8 flex flex-col">
       <div className="flex flex-col flex-1 bg-white dark:bg-neutral-800 p-6 rounded-xl shadow-lg">
@@ -156,7 +207,9 @@ const StudentList: React.FC = () => {
             />
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600 dark:text-gray-300">Sort By:</label>
+            <label className="text-sm text-gray-600 dark:text-gray-300">
+              Sort By:
+            </label>
             <select
               className="border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 dark:bg-neutral-700 dark:text-white focus:ring-2 focus:ring-purple-500"
               value={sortOption}
@@ -205,24 +258,117 @@ const StudentList: React.FC = () => {
                     className="border-t border-gray-200 hover:bg-gray-50 dark:hover:bg-neutral-700 transition-all duration-300"
                   >
                     <td className="px-4 py-2">{index + 1}</td>
-                    <td className="px-4 py-2">{student.name}</td>
-                    <td className="px-4 py-2">{student.studentId}</td>
-                    <td className="px-4 py-2">{student.classRoom}</td>
-                    <td className="px-4 py-2">{student.dateOfBirth}</td>
+
+                    {/* Name column */}
+                    <td className="px-4 py-2">
+                      {editStudentData?.$id === student.$id ? (
+                        <Input
+                          type="text"
+                          value={editStudentData.name}
+                          onChange={(e) =>
+                            setEditStudentData({
+                              ...editStudentData,
+                              name: e.target.value,
+                            })
+                          }
+                          className="w-full px-2 py-1 border rounded-md dark:bg-neutral-700 dark:text-white"
+                        />
+                      ) : (
+                        student.name
+                      )}
+                    </td>
+
+                    {/* Student ID column */}
+                    <td className="px-4 py-2">
+                      {editStudentData?.$id === student.$id ? (
+                        <Input
+                          type="text"
+                          value={editStudentData.studentId}
+                          onChange={(e) =>
+                            setEditStudentData({
+                              ...editStudentData,
+                              studentId: e.target.value,
+                            })
+                          }
+                          className="w-full px-2 py-1 border rounded-md dark:bg-neutral-700 dark:text-white"
+                        />
+                      ) : (
+                        student.studentId
+                      )}
+                    </td>
+
+                    {/* Class column */}
+                    <td className="px-4 py-2">
+                      {editStudentData?.$id === student.$id ? (
+                        <Input
+                          type="text"
+                          value={editStudentData.classRoom}
+                          onChange={(e) =>
+                            setEditStudentData({
+                              ...editStudentData,
+                              classRoom: e.target.value,
+                            })
+                          }
+                          className="w-full px-2 py-1 border rounded-md dark:bg-neutral-700 dark:text-white"
+                        />
+                      ) : (
+                        student.classRoom
+                      )}
+                    </td>
+
+                    {/* Date of Birth column */}
+                    <td className="px-4 py-2">
+                      {editStudentData?.$id === student.$id ? (
+                        <Input
+                          type="date"
+                          value={editStudentData.dateOfBirth}
+                          onChange={(e) =>
+                            setEditStudentData({
+                              ...editStudentData,
+                              dateOfBirth: e.target.value,
+                            })
+                          }
+                          className="w-full px-2 py-1 border rounded-md dark:bg-neutral-700 dark:text-white"
+                        />
+                      ) : (
+                        student.dateOfBirth
+                      )}
+                    </td>
+
+                    {/* Actions column */}
                     {user?.role === "admin" && (
                       <td className="px-4 py-2 flex items-center gap-3">
-                        <button
-                          className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-all duration-200"
-                          onClick={() => handleEdit(student.$id)}
-                        >
-                          <FaEdit />
-                        </button>
-                        <button
-                          className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-all duration-200"
-                          onClick={() => handleDelete(student.$id)}
-                        >
-                          <FaTrashAlt />
-                        </button>
+                        {editStudentData?.$id === student.$id  ? (
+                          <>
+                            <button
+                              className="text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 transition-all duration-200"
+                              onClick={handleEditSubmit}
+                            >
+                              Save
+                            </button>
+                            <button
+                              className="text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-all duration-200"
+                              onClick={() => setEditStudentData(null)}
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        ) : ( 
+                          <>
+                            <button
+                              className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-all duration-200"
+                              onClick={() => setEditStudentData(student)}
+                            >
+                              <FaEdit />
+                            </button>
+                            <button
+                              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-all duration-200"
+                              onClick={() => handleDelete(student.$id)}
+                            >
+                              <FaTrashAlt />
+                            </button>
+                          </>
+                        )}
                       </td>
                     )}
                   </tr>
@@ -230,36 +376,49 @@ const StudentList: React.FC = () => {
             </tbody>
           </table>
         </div>
-
-        {/* Pagination */}
-        <div className="flex justify-between items-center mt-6">
-          <button
-            onClick={handlePreviousPage}
-            disabled={currentPage === 1}
-            className="px-4 py-2 text-sm text-gray-600 bg-gray-200 rounded-md disabled:opacity-50 dark:bg-neutral-700 dark:text-white"
-          >
-            Previous
-          </button>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            Page {currentPage} of {totalPages}
-          </p>
-          <button
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-            className="px-4 py-2 text-sm text-gray-600 bg-gray-200 rounded-md disabled:opacity-50 dark:bg-neutral-700 dark:text-white"
-          >
-            Next
-          </button>
-        </div>
       </div>
-
-      {/* Confirmation Modal */}
-      <ConfirmationModal
+         {/* Confirmation Modal */}
+         <ConfirmationModal
         isOpen={isModalOpen}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
         message="Are you sure you want to delete this student?"
       />
+      {isSuccess && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg text-center">
+            <h2 className="text-xl font-semibold text-green-600">Success!</h2>
+            <p className="text-gray-700">
+              Student result have been successfully updated.
+            </p>
+            <button
+              onClick={closeSuccessPopup}
+              className="mt-4 bg-purple-500 text-white px-6 py-2 rounded-full"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Failure Popup */}
+
+      {isFailure && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
+            <h2 className="text-2xl font-semibold text-red-600 mb-4">
+              Oops, something went wrong!
+            </h2>
+            {/* <p className="text-gray-600 mb-6">{errorMessage}</p> */}
+            <button
+              onClick={closeFailurePopup}
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full transition duration-200 ease-in-out"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

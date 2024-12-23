@@ -275,7 +275,7 @@ const StudentForm = () => {
   
   return user.role === "admin" ? (
     //  return (
-    <div className="p-6 bg-white shadow-lg rounded-lg max-w-[90%] mx-auto">
+    <div className="p-6  shadow-lg rounded-lg max-w-[90%] mx-auto">
       <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
         Student Registration Form
       </h1>

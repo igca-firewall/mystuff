@@ -15,6 +15,7 @@ import {
 import { useUserContext } from "@/context/AuthContext";
 import { listAllStudents } from "@/lib/actions/studentsData.actions";
 import { ChartData } from 'chart.js'; // Import ChartData type
+import { Button } from "./ui/button";
 
 ChartJS.register(
   CategoryScale,
@@ -159,6 +160,7 @@ const Dashboard: React.FC = () => {
         </h2>
         <Line data={lineData} />
       </div>
+ 
     </div>
   );
 };
