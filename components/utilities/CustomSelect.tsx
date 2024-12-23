@@ -36,7 +36,7 @@ const Select: React.FC<SelectProps> = ({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="w-full px-4 py-2 bg-white dark:bg-neutral-700 border border-gray-300 rounded-md shadow-sm text-left focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+        className="w-full px-4 py-2 bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-md shadow-sm text-left focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
       >
         {selectedLabel || placeholder}
         <span className="float-right material-icons"><Image src="icons/arrow-down.svg" alt="" height={10} width={10}/> 
@@ -50,7 +50,7 @@ const Select: React.FC<SelectProps> = ({
             <li
               key={option.value}
               onClick={() => handleOptionClick(option.value)}
-              className={`px-4 py-2 cursor-pointer hover:bg-purple-100 ${
+              className={`px-4 py-2 cursor-pointer hover:bg-purple-100 dark:hover:bg-neutral-700 ${
                 value === option.value ? "bg-purple-500 text-white" : ""
               }`}
             >

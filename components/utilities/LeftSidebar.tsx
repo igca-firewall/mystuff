@@ -4,7 +4,7 @@ import { rightBarLinks, sidebarLinks } from "@/constants";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React from "react";
+import React, { useState } from "react";
 import Footer from "../utilities/Footer";
 
 import { useUserContext } from "@/context/AuthContext";
@@ -13,6 +13,8 @@ import DarkModeToggle from "./DarkModeToggle";
 const LeftSidebar = () => {
   const pathname = usePathname();
   const { user } = useUserContext();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   return (
     <section className="fixed  custom-scrollbar leftsidebar h-screen">
       <div className="flex flex-col h-full gap-6 px-4 ">
@@ -30,7 +32,7 @@ const LeftSidebar = () => {
                 quality={90}
               />
             </div>{" "}
-            <div className=" w-[100px]  h-full md:hidden max-lg:block xl:block  ">
+            <div className={`w-[100px]  h-full md:hidden max-lg:block xl:block ${isCollapsed ? 'hidden' : ''}`}>
               <Image
                 src="/images/particlesa.jpg"
                 alt=""
@@ -68,47 +70,53 @@ const LeftSidebar = () => {
                   }`}
                 />
               </div>
-              <p className="text-neutral-600 text-sm dark:text-neutral-100 md:hidden max-lg:block xl:block">
+              <p className={`text-neutral-600 text-sm dark:text-neutral-100 md:hidden max-lg:block xl:block ${isCollapsed ? 'hidden' : ''}`}>
                 {item.label}
               </p>
             </Link>
           );
         })}
 
-        {user.role==="admin" && 
-        
-        rightBarLinks.map((item) => {
-          const isActive =
-            pathname === item.route || pathname?.startsWith(`${item.route}/`);
-          return (
-            <Link
-              href={item.route}
-              key={item.label}
-              className={`rightbar_link items-center ${
-                isActive ? "bg-purple-500 " : "hover:bg-purple-400"
-              }`}
-            >
-              <div className="relative size-4">
-                <Image
-                  src={item.imgURL}
-                  alt={item.label}
-                  width={20}
-                  height={20}
-                  priority
-                  className={`${
-                    isActive
-                      ? "brightness-[3] invert-white"
-                      : "hover:invert-white"
-                  }`}
-                />
-              </div>
-              <p className="text-neutral-600 text-sm dark:text-neutral-100 md:hidden max-lg:block xl:block">
-                {item.label}
-              </p>
-            </Link>
-          );
-        })}
+        {user.role === "admin" &&
+          rightBarLinks.map((item) => {
+            const isActive =
+              pathname === item.route || pathname?.startsWith(`${item.route}/`);
+            return (
+              <Link
+                href={item.route}
+                key={item.label}
+                className={`rightbar_link items-center ${
+                  isActive ? "bg-purple-500 " : "hover:bg-purple-400"
+                }`}
+              >
+                <div className="relative size-4">
+                  <Image
+                    src={item.imgURL}
+                    alt={item.label}
+                    width={20}
+                    height={20}
+                    priority
+                    className={`${
+                      isActive
+                        ? "brightness-[3] invert-white"
+                        : "hover:invert-white"
+                    }`}
+                  />
+                </div>
+                <p className={`text-neutral-600 text-sm dark:text-neutral-100 md:hidden max-lg:block xl:block ${isCollapsed && 'hidden'}`}>
+                  {item.label}
+                </p>
+              </Link>
+            );
+          })}
       </div>
+      <button
+        className="absolute top-4 right-[-10px] w-8 h-8 bg-gray-200 dark:bg-gray-800 rounded-full flex items-center justify-center"
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        aria-label="Toggle Sidebar"
+      >
+        {isCollapsed ? "\u25B6" : "\u25C0"}
+      </button>
       {/* <div className="md:hidden sm:hidden flex xl:block">
         {" "}
         <Link href="/settings">

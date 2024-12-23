@@ -281,7 +281,7 @@ const StudentForm = () => {
       </h1>
 
       <form onSubmit={handleSubmit}>
-        <div className="overflow-x-auto rounded-md border border-gray-200 shadow-sm">
+        <div className="overflow-x-auto rounded-md border border-gray-200 dark:border-neutral-700 shadow-sm">
           <table className="table-auto w-full text-sm">
             <thead className="">
               <tr>
@@ -301,8 +301,8 @@ const StudentForm = () => {
                 <tr
                   key={index}
                   className={`${
-                    index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                  } hover:bg-purple-100 transition`}
+                    index % 2 === 0 ? "bg-white dark:bg-neutral-950" : "bg-neutral-50 dark:bg-neutral-900"
+                  } hover:bg-purple-100 dark:hover:bg-neutral-800 transition`}
                 >
                   <td className="px-4 py-2 text-gray-600 font-medium text-center">
                     {startIndex + index + 1}
@@ -315,7 +315,7 @@ const StudentForm = () => {
                       }
                       onKeyDown={(e) => handleKeyDown(e, index, "fullName")}
                       placeholder="Full Name"
-                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 dark:border-neutral-700"
                       rows={1}
                       //   ref={(el) => (fullNameRefs.current[index] = el)}
                     ></textarea>
@@ -328,7 +328,7 @@ const StudentForm = () => {
                       }
                       onKeyDown={(e) => handleKeyDown(e, index, "dateOfBirth")}
                       placeholder="YYYY-MM-DD"
-                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 dark:border-neutral-700"
                       rows={1}
                       //   ref={(el) => (dobRefs.current[index] = el)}
                     ></textarea>
@@ -341,7 +341,7 @@ const StudentForm = () => {
                       }
                       onKeyDown={(e) => handleKeyDown(e, index, "parentInfo")}
                       placeholder="Parent Info"
-                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 dark:border-neutral-700"
                       rows={1}
                       //   ref={(el) => (parentInfoRefs.current[index] = el)}
                     ></textarea>
@@ -366,7 +366,7 @@ const StudentForm = () => {
         {/* Success Popup */}
         {isSuccess && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white p-6 rounded-lg text-center">
+            <div className="bg-white dark:bg-neutral-700 p-6 rounded-lg text-center">
               <h2 className="text-xl font-semibold text-green-600">Success!</h2>
               <p className="text-gray-700">
                 Student records have been successfully added.
@@ -385,7 +385,7 @@ const StudentForm = () => {
 
         {isFailure && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-            <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
+            <div className="bg-white dark:bg-neutral-700 p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
               <h2 className="text-2xl font-semibold text-red-600 mb-4">
                 Oops, something went wrong!
               </h2>
@@ -405,7 +405,7 @@ const StudentForm = () => {
           <button
             type="button"
             onClick={goToPreviousPage}
-            className="text-purple-500 bg-gray-300 px-5 py-2 rounded-full"
+            className="text-purple-500 bg-gray-300 dark:bg-neutral-700 px-5 py-2 rounded-full"
             disabled={currentPage === 1}
           >
             Previous
@@ -413,7 +413,7 @@ const StudentForm = () => {
           <button
             type="button"
             onClick={goToNextPage}
-            className="text-purple-500 bg-gray-300  px-5 py-2 rounded-full"
+            className="text-purple-500 bg-gray-300 dark:bg-neutral-700  px-5 py-2 rounded-full"
             disabled={currentPage === totalPages}
           >
             Next

@@ -189,7 +189,7 @@ const StudentList: React.FC = () => {
 
   return (
     <div className="w-full h-full bg-gray-50 dark:bg-neutral-900 p-6 sm:p-8 flex flex-col">
-      <div className="flex flex-col flex-1 bg-white dark:bg-neutral-800 p-6 rounded-xl shadow-lg">
+      <div className="flex flex-col flex-1 bg-white  dark:bg-neutral-800 p-6 rounded-xl shadow-lg">
         <h1 className="text-3xl font-semibold text-gray-800 dark:text-white mb-6">
           Student List
         </h1>
@@ -255,7 +255,7 @@ const StudentList: React.FC = () => {
                 .map((student, index) => (
                   <tr
                     key={student.$id}
-                    className="border-t border-gray-200 hover:bg-gray-50 dark:hover:bg-neutral-700 transition-all duration-300"
+                    className="border-t border-gray-200 dark:border-neutral-700 dark:hover:bg-neutral-900 hover:bg-gray-50 transition-all duration-300"
                   >
                     <td className="px-4 py-2">{index + 1}</td>
 
@@ -386,9 +386,9 @@ const StudentList: React.FC = () => {
       />
       {isSuccess && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg text-center">
+          <div className="bg-white dark:bg-neutral-800 p-6 rounded-lg text-center">
             <h2 className="text-xl font-semibold text-green-600">Success!</h2>
-            <p className="text-gray-700">
+            <p className="text-gray-700 dark:text-white">
               Student result have been successfully updated.
             </p>
             <button
@@ -405,7 +405,7 @@ const StudentList: React.FC = () => {
 
       {isFailure && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
+          <div className="bg-white dark:bg-neutral-800 p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
             <h2 className="text-2xl font-semibold text-red-600 mb-4">
               Oops, something went wrong!
             </h2>
