@@ -276,14 +276,14 @@ const StudentForm = () => {
   return user.role === "admin" ? (
     //  return (
     <div className="p-6  shadow-lg rounded-lg max-w-[90%] mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
+      <h1 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-gray-100">
         Student Registration Form
       </h1>
 
       <form onSubmit={handleSubmit}>
         <div className="overflow-x-auto rounded-md border border-gray-200 shadow-sm">
           <table className="table-auto w-full text-sm">
-            <thead className="bg-gray-100 text-gray-800">
+            <thead className="">
               <tr>
                 <th className="px-4 py-2 text-left font-semibold">#</th>
                 <th className="px-4 py-2 text-left font-semibold">Full Name</th>
