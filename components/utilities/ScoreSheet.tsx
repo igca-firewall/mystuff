@@ -544,9 +544,9 @@ const SubjectResultUploader: React.FC = () => {
         </label>
 
         {isLoading ? (
-          <div className="flex justify-center items-center h-full bg-gray-50">
+          <div className="flex justify-center items-center h-full ">
             <div className="flex flex-col items-center">
-              <div className="w-12 h-12 border-4 border-gray-300 border-dotted rounded-full animate-spin"></div>
+              <div className="w-12 h-12 border-4 border-purple-300 border-dotted rounded-full animate-spin"></div>
               <p className="mt-4 text-gray-600 font-medium">Loading...</p>
             </div>
           </div>
@@ -570,7 +570,7 @@ const SubjectResultUploader: React.FC = () => {
                   {` Midterm Project (10%)    `}
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {`Book and Beyond (20%)`}
+                  {`Book and-Beyond (20%)`}
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
                   {`Examination (40%)`}
