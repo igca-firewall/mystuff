@@ -368,7 +368,7 @@ const StudentForm = () => {
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div className="bg-white dark:bg-neutral-700 p-6 rounded-lg text-center">
               <h2 className="text-xl font-semibold text-green-600">Success!</h2>
-              <p className="text-gray-700">
+              <p className="text-gray-700 dark:text-neutral-50">
                 Student records have been successfully added.
               </p>
               <button
