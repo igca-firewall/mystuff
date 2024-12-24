@@ -73,8 +73,7 @@ const SubjectResultUploader: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const { user } = useUserContext();
   const [isStudent, setIsStudent] = useState<Scores[]>([]);
-  const [wasted, setWasted] =useState(false)
-   const [scores, setScores] = useState<Scores[]>([]);
+  const [scores, setScores] = useState<Scores[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false); // Processing state for submit button
   const [errors, setErrors] = useState<string[]>([]); // Error state
@@ -197,25 +196,14 @@ const SubjectResultUploader: React.FC = () => {
           if (uploadResponse) {
             successfulUploads.push(result.studentName);
             setIsSuccess(true);
-            setWasted(true)
             // Clear the result from state if successfully uploaded
             setResults((prevResults) =>
               prevResults.filter((r) => r.studentId !== result.studentId)
             );
             setCompletedSubmissions((prev) => prev + 1);
-            setIsSuccess(true); 
-            // Show success popup for this submission
+            setIsSuccess(true); // Show success popup for this submission
             autoClosePopup(setIsSuccess); // Close success popup after 3 seconds
             // setIsStudent(true);
-            const draftKey = `${classRoom}_${subject}_${session}`;
-
-            // Remove the saved drafts from localStorage
-            localStorage.removeItem(draftKey);
-          
-            // Optionally, you can also handle any additional actions on submit, 
-            // like updating the server or finalizing the submission.
-            
-            alert('Form submitted and localStorage data cleared!');
           } else {
             setIsFailure(true);
             throw new Error(
@@ -262,7 +250,6 @@ const SubjectResultUploader: React.FC = () => {
       setIsFailure(true); // Handle any other errors
       autoClosePopup(setIsFailure); // Close failure popup after 3 seconds
     } finally {
-
       setIsProcessing(false); // Reset processing state
     }
   };
@@ -638,107 +625,112 @@ const SubjectResultUploader: React.FC = () => {
 
                         {/* Grade Inputs */}
                         {fields.map((field, idx) => (
-  <td className="px-6 py-3" key={idx}>
-    <Input
-      type="number"
-      placeholder={
-        field === "bnb"
-          ? "B/B"
-          : field.split(/(?=[A-Z])/).join(" ")
-      }
-      value={
-        (() => {
-          const draftKey = `${classRoom}_${subject}_${session}`;
-          const drafts = localStorage.getItem(draftKey);
-          const parsedDrafts = drafts ? JSON.parse(drafts) : {};
-          return String(
-            parsedDrafts[student.studentId]?.grades[idx] ||
-            studentResult?.grades[idx] ||
-            ""
-          );
-        })()
-      }
-      max={field === "bnb" ? 20 : field === "exam" ? 40 : 10}
-      min={0}
-      onChange={(e) => {
-        const max = field === "bnb" ? 20 : field === "exam" ? 40 : 10;
-        const value = Number(e.target.value);
+                          <td className="px-6 py-3" key={idx}>
+                            <Input
+                              type="number"
+                              placeholder={
+                                field === "bnb"
+                                  ? "B/B"
+                                  : field.split(/(?=[A-Z])/).join(" ")
+                              }
+                              value={(() => {
+                                const draftKey = `${classRoom}_${subject}_${session}`;
+                                const drafts = localStorage.getItem(draftKey);
+                                const parsedDrafts = drafts
+                                  ? JSON.parse(drafts)
+                                  : {};
+                                return (
+                                  parsedDrafts[student.studentId]?.grades[
+                                    idx
+                                  ] ||
+                                  studentResult?.grades[idx] ||
+                                  ""
+                                );
+                              })()}
+                              max={
+                                field === "bnb"
+                                  ? 20
+                                  : field === "exam"
+                                  ? 40
+                                  : 10
+                              }
+                              min={0}
+                              onChange={(e) => {
+                                const max =
+                                  field === "bnb"
+                                    ? 20
+                                    : field === "exam"
+                                    ? 40
+                                    : 10;
+                                const value = Number(e.target.value);
 
-        if (value > max) {
-          alert(`Value for "${field}" exceeds the maximum allowed (${max}).`);
-          return;
-        }
+                                if (value > max) {
+                                  alert(
+                                    `Value for "${field}" exceeds the maximum allowed (${max}).`
+                                  );
+                                  return;
+                                }
 
-        // Create a unique key for this class, subject, and session
-        const draftKey = `${classRoom}_${subject}_${session}`;
+                                // Create a unique key for this class, subject, and session
+                                const draftKey = `${classRoom}_${subject}_${session}`;
 
-        // Update grades for this student
-        const newGrades = [...(studentResult?.grades || [])];
-        newGrades[idx] = value;
+                                // Update grades for this student
+                                const newGrades = [
+                                  ...(studentResult?.grades || []),
+                                ];
+                                newGrades[idx] = value;
 
-        // Save updated grades to localStorage
-        const drafts = localStorage.getItem(draftKey);
-        const existingDrafts = drafts ? JSON.parse(drafts) : {};
-        existingDrafts[student.studentId] = {
-          grades: newGrades,
-        };
-        localStorage.setItem(draftKey, JSON.stringify(existingDrafts));
+                                // Save updated grades to localStorage
+                                const drafts = localStorage.getItem(draftKey);
+                                const existingDrafts = drafts
+                                  ? JSON.parse(drafts)
+                                  : {};
+                                existingDrafts[student.studentId] = {
+                                  grades: newGrades,
+                                };
+                                localStorage.setItem(
+                                  draftKey,
+                                  JSON.stringify(existingDrafts)
+                                );
 
-        // Update result using parent function
-        handleAddResult(student.studentId, newGrades);
-      }}
- onKeyDown={(e) => {
-        if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-          e.preventDefault();
-          inputRefs[student.studentId]?.[idx + 1]?.focus(); // Move to the next field in the same row
-        } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-          e.preventDefault();
-          inputRefs[student.studentId]?.[idx - 1]?.focus(); // Move to the previous field in the same row
-        }
-      }}
-      ref={(el) => {
-        if (!inputRefs[student.studentId]) {
-          inputRefs[student.studentId] = []; // Initialize row-specific refs array
-        }
-        inputRefs[student.studentId][idx] = el;
-      }} // Store refs for each input in the respective student's arrayt
-      className="w-full text-sm text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-purple-500 focus:border-purple-500"
-    />
-  </td>
-))}
-
-<td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
-  {studentResult
-    ? studentResult.sum
-    : (() => {
-        const draftKey = `${classRoom}_${subject}_${session}`;
-        const drafts = localStorage.getItem(draftKey);
-        const parsedDrafts = drafts ? JSON.parse(drafts) : {};
-        const grades: number[] = parsedDrafts[student.studentId]?.grades || [];
-        
-        // Sum the grades (adjust based on your grading system)
-        const sum = grades.reduce((total: number, grade: number) => total + (grade || 0), 0);
-        return sum > 0 ? sum : "-"; // Return sum or "-" if no valid sum
-      })()}
-</td>
-<td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
-  {studentResult
-    ? studentResult.grade
-    : (() => {
-        const draftKey = `${classRoom}_${subject}_${session}`;
-        const drafts = localStorage.getItem(draftKey);
-        const parsedDrafts = drafts ? JSON.parse(drafts) : {};
-        const grades: number[] = parsedDrafts[student.studentId]?.grades || [];
-        
-        // Sum the grades (adjust based on your grading system)
-        const sum = grades.reduce((total: number, grade: number) => total + (grade || 0), 0);
-        
-        // Calculate the grade based on the sum
-        const grade = calculateGrade(sum);
-        return grade !== "F9" ? grade : "-"; // Return grade or "-" if it's "F9" or no valid grade
-      })()}
-</td>
-
+                                // Update result using parent function
+                                handleAddResult(student.studentId, newGrades);
+                              }}
+                              onKeyDown={(e) => {
+                                if (
+                                  e.key === "ArrowRight" ||
+                                  e.key === "ArrowDown"
+                                ) {
+                                  e.preventDefault();
+                                  inputRefs[student.studentId]?.[
+                                    idx + 1
+                                  ]?.focus(); // Move to the next field in the same row
+                                } else if (
+                                  e.key === "ArrowLeft" ||
+                                  e.key === "ArrowUp"
+                                ) {
+                                  e.preventDefault();
+                                  inputRefs[student.studentId]?.[
+                                    idx - 1
+                                  ]?.focus(); // Move to the previous field in the same row
+                                }
+                              }}
+                              ref={(el) => {
+                                if (!inputRefs[student.studentId]) {
+                                  inputRefs[student.studentId] = []; // Initialize row-specific refs array
+                                }
+                                inputRefs[student.studentId][idx] = el;
+                              }} // Store refs for each input in the respective student's arrayt
+                              className="w-full text-sm text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-purple-500 focus:border-purple-500"
+                            />
+                          </td>
+                        ))}
+                        <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
+                          {studentResult ? studentResult.sum : "-"}
+                        </td>
+                        <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
+                          {studentResult ? studentResult.grade : "-"}
+                        </td>
                         {/* New Column Showing Yes/No for Student in Results */}
                         <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
                           <div
