@@ -101,6 +101,11 @@ const SubjectResultUploader: React.FC = () => {
   const closePopup = () => {
     setShowPopup(false);
   };
+  const [exceededField, setExceededField] = useState(null);
+
+
+ 
+
   const prevField = () => {
     if (activeColumn > 0) {
       setActiveColumn(activeColumn - 1);
@@ -108,7 +113,9 @@ const SubjectResultUploader: React.FC = () => {
     }
   };
   const max = fields.map((field) => {
-    return field === "bnb" ? 20 : field === "exam" ? 40 : 10; // Adjust max values accordingly
+    return field === "bnb" ? 20 : field === "exam" ? 40 : 10;
+    
+    // Adjust max values accordingly
   });
 
   const handleKeyPress = (e) => {
@@ -587,103 +594,109 @@ const SubjectResultUploader: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {students.map((student) => {
-                // Fetch the latest student's result from `results` array
-                const studentResult = results.find(
-                  (result) => result.studentId === student.studentId
-                );
+  {
+    // Sort students alphabetically by name before mapping
+    [...students]
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((student) => {
+        // Fetch the latest student's result from `results` array
+        const studentResult = results.find(
+          (result) => result.studentId === student.studentId
+        );
 
-                // Filter the students based on the latest `scores` data
-                const filteredStudents = students.filter((student) =>
-                  scores.some((score) => score.studentId === student.studentId)
-                );
+        // Filter the students based on the latest `scores` data
+        const filteredStudents = students.filter((student) =>
+          scores.some((score) => score.studentId === student.studentId)
+        );
 
-                // Ensure you are always working with the most recent `filteredStudents`
-                const isVerified = filteredStudents.some(
-                  (filteredStudent) =>
-                    filteredStudent.studentId === student.studentId
-                );
+        // Ensure you are always working with the most recent `filteredStudents`
+        const isVerified = filteredStudents.some(
+          (filteredStudent) =>
+            filteredStudent.studentId === student.studentId
+        );
 
-                // You can now use `isVerified` to render the correct icon for each student
+        // You can now use `isVerified` to render the correct icon for each student
+        return (
+          <tr
+            key={student.studentId}
+            className="border-b border-gray-200 dark:border-neutral-700"
+          >
+            <td className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+              {student.name}
+            </td>
 
-                // {isStudentInResults && setIsStudent(true)}
-                return (
-                  <tr
-                    key={student.studentId}
-                    className="border-b border-gray-200 dark:border-neutral-700"
-                  >
-                    <td className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {student.name}
-                    </td>
+            {/* Grade Inputs */}
+            {fields.map((field, idx) => (
+              <td className="px-6 py-3" key={idx}>
+                <Input
+                  type="number"
+                  placeholder={
+                    field === "bnb"
+                      ? "B/B"
+                      : field.split(/(?=[A-Z])/).join(" ")
+                  }
+                  value={studentResult?.grades[idx] || ""}
+                  max={
+                    field === "bnb" ? 20 : field === "exam" ? 40 : 10
+                  }
+                  min={0}
+                  onChange={(e) => {
+                    const max = field === "bnb" ? 20 : field === "exam" ? 40 : 10; // Calculate max value
+                    if (Number(e.target.value) > max) {
+                      alert(`Value for "${field}" exceeds the maximum allowed (${max}).`);
+                      return;
+                    }
+                    
+                    const newGrades = [...(studentResult?.grades || [])];
+                    newGrades[idx] = e.target.value;
+                    handleAddResult(student.studentId, newGrades);
+                  }}
+                  onKeyDown={(e) => handleKeyPress(e)} // Handle key presses for navigation
+                  ref={(el) => {
+                    inputRefs.current[idx] = el;
+                  }} // Store refs for each input
+                  className="w-full text-sm text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-purple-500 focus:border-purple-500"
+                />
+              </td>
+            ))}
 
-                    {/* Grade Inputs */}
-                    {fields.map((field, idx) => (
-                      // <tr key={idx}>
-                      <td className="px-6 py-3">
-                        <Input
-                          type="number"
-                          placeholder={
-                            field === "bnb"
-                              ? "B/B"
-                              : field.split(/(?=[A-Z])/).join(" ")
-                          }
-                          value={studentResult?.grades[idx] || ""}
-                          max={
-                            field === "bnb" ? 20 : field === "exam" ? 40 : 10
-                          }
-                          min={0}
-                          onChange={(e) => {
-                            const newGrades = [
-                              ...(studentResult?.grades || []),
-                            ];
-                            newGrades[idx] = e.target.value;
-                            handleAddResult(student.studentId, newGrades);
-                          }}
-                          onKeyDown={(e) => handleKeyPress(e)} // Handle key presses for navigation
-                          ref={(el) => {
-                            inputRefs.current[idx] = el;
-                          }} // Store refs for each input
-                          className="w-full text-sm text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-purple-500 focus:border-purple-500"
-                        />
-                      </td>
-                      // </tr>
-                    ))}
+            <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
+              {studentResult ? studentResult.sum : "-"}
+            </td>
+            <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
+              {studentResult ? studentResult.grade : "-"}
+            </td>
+            {/* New Column Showing Yes/No for Student in Results */}
+            <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
+              <div
+                key={student.studentId}
+                className="flex items-center justify-center"
+              >
+                {isVerified ? (
+                  <Image
+                    src="/images/verified-p.png"
+                    height={18}
+                    width={18}
+                    alt="Verified"
+                    className="mr-1"
+                  />
+                ) : (
+                  <Image
+                    src="/images/unverified.png"
+                    height={18}
+                    width={18}
+                    alt="Unverified"
+                    className="mr-1"
+                  />
+                )}
+              </div>
+            </td>
+          </tr>
+        );
+      })}
+  
+</tbody>
 
-                    <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
-                      {studentResult ? studentResult.sum : "-"}
-                    </td>
-                    <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
-                      {studentResult ? studentResult.grade : "-"}
-                    </td>
-                    {/* New Column Showing Yes/No for Student in Results */}
-                    <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
-                      <div
-                        key={student.studentId}
-                        className="flex items-center justify-center"
-                      >
-                        {isVerified ? (
-                          <Image
-                            src="/images/verified-p.png"
-                            height={18}
-                            width={18}
-                            alt="Verified"
-                            className="mr-1"
-                          />
-                        ) : (
-                          <Image
-                            src="/images/unverified.png"
-                            height={18}
-                            width={18}
-                            alt="Unverified"
-                            className="mr-1"
-                          />
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
           </table>
         )}
       </div>
