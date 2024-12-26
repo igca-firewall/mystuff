@@ -106,10 +106,21 @@ export const updateScoresWithClassRoom = async ({ classRoom }: { classRoom: stri
     }
   
     if (updatedCount === 0) {
-      console.log("No updates were required.");
-    }
-  
-    return updatedCount; // Return the count of updated scores
+        console.log("No updates were required.");
+        return null;
+      }
+    
+      // Update completed successfully
+      console.log(`${updatedCount} updates were successful.`);
+    
+      // Optionally perform other actions after the update is done, like updating UI or state
+      // For example, you could display a success message, refresh the data, or redirect
+    
+      // Example: Set a success state if you're using React state for UI feedback
+    
+      // You can also trigger any additional side effects, such as navigating or updating other UI components
+      return updatedCount;  
+      // Return the count of updated scores
   };
   
   
