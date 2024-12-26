@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { getStudentsByClass } from "@/lib/actions/studentsData.actions";
-import { updateScoresWithClassRoom } from "@/lib/actions/updateStudents.actions";
+import { listAllScores, updateScoresWithClassRoom } from "@/lib/actions/updateStudents.actions";
 import { Button } from "../ui/button";
 import { classOrder } from "@/lib/utils";
 import Select from "./CustomSelect";
@@ -26,9 +26,24 @@ const UpdateScoresComponent: React.FC = () => {
       const fetchedScores = await getStudentsByClass({ classRoom });
       if (fetchedScores.length === 0) {
         throw new Error("No scores available to update.");
-      }
-
-      setProgress({ total: fetchedScores.length, updated: 0 });
+      } const studentClassRoomMap = fetchedScores.reduce((map, student) => {
+        map[student.studentId] = student.classRoom;
+        return map;
+      }, {} as Record<string, string>);
+    
+      const allScores = await Promise.all(
+        fetchedScores.map(async (student) => {
+          const studentId = student.studentId;
+          const scores = await listAllScores({ studentId });
+          return scores
+            .filter((score) => score.classRoom !== studentClassRoomMap[studentId]) // Filter scores that need updates
+            .map((score) => ({
+              id: score.$id,
+              classRoom: studentClassRoomMap[studentId], // Map score to its updated classRoom
+            }));
+        })
+      );
+      setProgress({ total: allScores.length, updated: 0 });
       setStatus("idle");
 
       const updates = fetchedScores.map(async (score) => {
