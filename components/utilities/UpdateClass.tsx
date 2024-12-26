@@ -98,7 +98,7 @@ const UpdateScoresComponent: React.FC = () => {
 
         <Button
           type="submit"
-          className="px-6 py-3 rounded-md bg-purple-500 text-white"
+          className="px-12 py-8 rounded-full bg-purple-500 text-white"
           disabled={!classRoom || isLoading}
         >
           {isLoading ? "Updating..." : "Update Class"}
