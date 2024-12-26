@@ -57,62 +57,61 @@ export const listAllDocuments = async (collectionId: string) => {
 
   return allDocuments;
 };
-export const updateScoresWithClassRoom = async ({classRoom}:{classRoom: string}) => {
+export const updateScoresWithClassRoom = async ({ classRoom }: { classRoom: string }) => {
     const { database } = await createAdminClient();
   
-    // Step 1: List all students
-    const students = await getStudentsByClass({classRoom});
+    // Step 1: List all students in the specified class
+    const students = await getStudentsByClass({ classRoom });
     console.log("AllStudents", students);
   
     // Step 2: Create a mapping of student IDs to classRoom values
     const studentClassRoomMap = students.reduce((map, student) => {
-      map[student.studentId] = student.classRoom; // Map studentId to classRoom
+      map[student.studentId] = student.classRoom;
       return map;
     }, {} as Record<string, string>);
   
-    let updatedCount = 0; // Initialize updated count
+    // Step 3: Gather all scores requiring updates in one step
+    const allScores = await Promise.all(
+      students.map(async (student) => {
+        const studentId = student.studentId;
+        const scores = await listAllScores({ studentId });
+        return scores
+          .filter((score) => score.classRoom !== studentClassRoomMap[studentId]) // Filter scores that need updates
+          .map((score) => ({
+            id: score.$id,
+            classRoom: studentClassRoomMap[studentId], // Map score to its updated classRoom
+          }));
+      })
+    );
   
-    // Step 3: For each student, list their scores and update classRoom
-    for (const student of students) {
-      const studentId = student.studentId; // Get the studentId from the student record
+    // Flatten the nested array of scores
+    const updatedScores = allScores.flat();
   
-      // Fetch scores for the specific student
-      const scores = await listAllScores({ studentId });
+    // Step 4: Update scores one by one
+    let updatedCount = 0;
   
-      // Step 4: Update each score's classRoom field based on the studentId
-      for (const score of scores) {
-        // Check if the student has a classRoom in the studentClassRoomMap
-        if (studentClassRoomMap[studentId]) {
-          // Skip the update if the classRoom is already correct
-          if (score.classRoom === studentClassRoomMap[studentId]) {
-            console.log(`Score ${studentId} already has the correct classRoom. Skipping update.`);
-            continue; // Skip this score and move to the next
-          }
-  
-          try {
-            // Update the score document with the classRoom from the student
-         const aki= await database.updateDocument(
-              DATABASE_ID!,
-              SCORES_COLLECTION_ID!,
-              score.$id,
-              {
-                classRoom: studentClassRoomMap[studentId], // Update the classRoom field in the score document
-              }
-            );
-            if(aki)
-            console.log(`Updated score ${studentId} with classRoom ${studentClassRoomMap[studentId]}`);
-            updatedCount++; // Increment updated count
-          } catch (error) {
-            console.error(`Failed to update score ${score.$id}:`, error);
-          }
-        } else {
-          console.warn(`No matching student found for score ${score.$id} with studentId ${studentId}`);
-        }
+    for (const score of updatedScores) {
+      try {
+        await database.updateDocument(
+          DATABASE_ID!,
+          SCORES_COLLECTION_ID!,
+          score.id,
+          { classRoom: score.classRoom } // Update the classRoom field
+        );
+        console.log(`Successfully updated score with ID: ${score.id}`);
+        updatedCount++;
+      } catch (error) {
+        console.error(`Failed to update score with ID: ${score.id}`, error);
       }
+    }
+  
+    if (updatedCount === 0) {
+      console.log("No updates were required.");
     }
   
     return updatedCount; // Return the count of updated scores
   };
+  
   
   
   export const listAllScores = async ({ studentId }: { studentId: string }) => {
