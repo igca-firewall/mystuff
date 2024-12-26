@@ -201,6 +201,7 @@ const SubjectResultUploader: React.FC = () => {
             setIsSuccess(true); // Show success popup for this submission
             autoClosePopup(setIsSuccess); // Close success popup after 3 seconds
             // setIsStudent(true);
+
           } else {
             setIsFailure(true);
             throw new Error(
@@ -238,6 +239,8 @@ const SubjectResultUploader: React.FC = () => {
           `Successfully uploaded results for: ${successfulUploads.join(", ")}`
         );
       }
+      const draftKey = `${classRoom}_${subject}_${session}`;
+       localStorage.removeItem(draftKey);
     } catch (error) {
       console.error("Unexpected error during submission:", error);
       setErrors((prev) => [

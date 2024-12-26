@@ -117,6 +117,7 @@ export const fetchResultWithSubject = async ({
     if (subject) scoresQuery.push(Query.equal("subject", subject));
     if (term) scoresQuery.push(Query.equal("term", term));
     if (limit) scoresQuery.push(Query.limit(limit));
+    if (classRoom) scoresQuery.push(Query.equal("classRoom",classRoom));
     // if (id || Array.isArray(id)) scoresQuery.push(Query.equal("studentId", id)); // Handle array of IDs
 
     // Fetch scores for the selected subject in each result document
