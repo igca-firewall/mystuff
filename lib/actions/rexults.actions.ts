@@ -297,6 +297,7 @@ export const uploadResults = async ({
           total,
           term,
           session,
+          classRoom,
           grade,
           exam,
           name,
