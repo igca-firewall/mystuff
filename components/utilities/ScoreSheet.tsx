@@ -11,6 +11,7 @@ import {
   fetchResultWithSubject,
 } from "@/lib/actions/rexults.actions";
 import Image from "next/image";
+import { addresults } from "@/lib/actions/results.actions";
 
 // Interfaces for student and result data
 interface Student {
@@ -151,14 +152,13 @@ const SubjectResultUploader: React.FC = () => {
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
-    // Add extensive state handling
     setIsProcessing(true);
-    setIsSuccess(false); // Reset before submission
-    setIsFailure(false); // Reset before submission
+    setIsSuccess(false);
+    setIsFailure(false);
     setCompletedSubmissions(0);
 
-    const uploadErrors: string[] = [];
-    const successfulUploads: string[] = [];
+    const uploadErrors = [];
+    const successfulUploads = [];
 
     try {
       for (const result of results) {
@@ -166,42 +166,43 @@ const SubjectResultUploader: React.FC = () => {
         const [firstTest, secondTest, project, bnb, assignment, exam] =
           result.grades;
 
-        // Prepare the result data for the upload
-        const uploadData = {
-          id: result.studentId,
-          firstTest: firstTest || "0",
-          secondTest: secondTest || "0",
-          project: project || "0",
-          bnb: bnb || "0",
-          assignment: assignment || "0",
-          exam: exam || "0",
-          result: `${result.sum}`,
-          classRoom,
-          term,
-          session,
-          grade: result.grade,
-          subject,
-          name: result.studentName,
-          createdBy: user.$id,
-          total: `${result.sum}`,
-        };
-        try {
-          console.log("All scores", results, uploadData);
+        // Prepare the scores array for the upload
+        const scores = [
+          result.studentId,
+          result.studentName,
+          firstTest || "0",
+          secondTest || "0",
+          project || "0",
+          bnb || "0",
+          assignment || "0",
+          exam || "0",
+          `${result.sum}`,
+          `${result.grade}`,
+        ];
 
-          // Call the uploadResults function
-          const uploadResponse = await uploadResults(uploadData);
+        // Prepare data for the upload
+        const uploadData = {
+          classRoom,
+          session,
+          term,
+          subject,
+          scores,
+        };
+
+        try {
+          // Call the addresults function
+          const uploadResponse = await addresults(uploadData);
 
           if (uploadResponse) {
             successfulUploads.push(result.studentName);
             setIsSuccess(true);
+
             // Clear the result from state if successfully uploaded
             setResults((prevResults) =>
               prevResults.filter((r) => r.studentId !== result.studentId)
             );
             setCompletedSubmissions((prev) => prev + 1);
-            setIsSuccess(true); // Show success popup for this submission
             autoClosePopup(setIsSuccess); // Close success popup after 3 seconds
-            // setIsStudent(true);
           } else {
             setIsFailure(true);
             throw new Error(
@@ -234,7 +235,6 @@ const SubjectResultUploader: React.FC = () => {
       }
 
       if (successfulUploads.length > 0) {
-        // Show success page for the successful uploads
         console.log(
           `Successfully uploaded results for: ${successfulUploads.join(", ")}`
         );
@@ -253,6 +253,7 @@ const SubjectResultUploader: React.FC = () => {
       setIsProcessing(false); // Reset processing state
     }
   };
+
   const closeSuccessPopup = () => {
     setIsSuccess(false);
   };
