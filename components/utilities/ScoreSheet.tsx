@@ -149,7 +149,7 @@ const SubjectResultUploader: React.FC = () => {
   };
   // Handle form submission
   const handleSubmit = async () => {
-     if (!validateForm()) return;
+    if (!validateForm()) return;
 
     // Add extensive state handling
     setIsProcessing(true);
@@ -185,11 +185,12 @@ const SubjectResultUploader: React.FC = () => {
           createdBy: user.$id,
           total: `${result.sum}`,
         };
-       try { console.log("All scores",results, uploadData )
-      
+        try {
+          console.log("All scores", results, uploadData);
+
           // Call the uploadResults function
           const uploadResponse = await uploadResults(uploadData);
-         
+
           if (uploadResponse) {
             successfulUploads.push(result.studentName);
             setIsSuccess(true);
@@ -201,7 +202,6 @@ const SubjectResultUploader: React.FC = () => {
             setIsSuccess(true); // Show success popup for this submission
             autoClosePopup(setIsSuccess); // Close success popup after 3 seconds
             // setIsStudent(true);
-
           } else {
             setIsFailure(true);
             throw new Error(
@@ -240,7 +240,7 @@ const SubjectResultUploader: React.FC = () => {
         );
       }
       const draftKey = `${classRoom}_${subject}_${session}`;
-       localStorage.removeItem(draftKey);
+      localStorage.removeItem(draftKey);
     } catch (error) {
       console.error("Unexpected error during submission:", error);
       setErrors((prev) => [
@@ -322,7 +322,7 @@ const SubjectResultUploader: React.FC = () => {
       try {
         setIsLoading(true);
         setStudents([]); // Clear students immediately before fetching
-        
+
         const xed: Models.Document[] = await getStudentsByClass({ classRoom });
         if (xed) {
           const transformedStudents = xed.map((student) => ({
@@ -330,7 +330,7 @@ const SubjectResultUploader: React.FC = () => {
             name: student.name,
             studentId: student.studentId,
           }));
-  
+
           setStudents(transformedStudents);
           console.log(transformedStudents, students);
         }
@@ -340,26 +340,26 @@ const SubjectResultUploader: React.FC = () => {
         setIsLoading(false);
       }
     };
-  
+
     if (classRoom && term && session && subject) {
       fetchStudents();
     }
   }, [classRoom, term, session, subject]);
-  
+
   useEffect(() => {
     const fetchStudentsScore = async () => {
       try {
         setIsLoading(true);
         setScores([]); // Clear scores immediately before fetching
         setIsStudent([]); // Clear isStudent immediately before fetching
-        
+
         const particles = await fetchResultWithSubject({
           classRoom,
           term,
           session,
           subject,
         });
-  
+
         if (particles) {
           const transformedScores = particles.map((scores) => ({
             $id: scores.$id,
@@ -402,12 +402,12 @@ const SubjectResultUploader: React.FC = () => {
         setIsLoading(false);
       }
     };
-  
+
     if (classRoom && subject && session && term && students.length > 0) {
       fetchStudentsScore();
     }
   }, [classRoom, subject, session, term, students]);
-  
+
   return (
     <div className="w-full h-full flex flex-col items-center justify-start bg-gray-50 dark:bg-neutral-900 p-8">
       <h2 className="text-3xl font-semibold mb-8 text-gray-800 dark:text-gray-200 transition duration-200">
@@ -590,143 +590,173 @@ const SubjectResultUploader: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-  {
-    // Sort students alphabetically by name before mapping
-    [...students]
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .map((student) => {
-        // Fetch the latest student's result from `results` array
-        const studentResult = results.find(
-          (result) => result.studentId === student.studentId
-        );
+              {
+                // Sort students alphabetically by name before mapping
+                [...students]
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map((student) => {
+                    // Fetch the latest student's result from `results` array
+                    const studentResult = results.find(
+                      (result) => result.studentId === student.studentId
+                    );
 
-        // Filter the students based on the latest `scores` data
-        const filteredStudents = students.filter((student) =>
-          scores.some((score) => score.studentId === student.studentId)
-        );
+                    // Filter the students based on the latest `scores` data
+                    const filteredStudents = students.filter((student) =>
+                      scores.some(
+                        (score) => score.studentId === student.studentId
+                      )
+                    );
 
-        // Ensure you are always working with the most recent `filteredStudents`
-        const isVerified = filteredStudents.some(
-          (filteredStudent) =>
-            filteredStudent.studentId === student.studentId
-        );
+                    // Ensure you are always working with the most recent `filteredStudents`
+                    const isVerified = filteredStudents.some(
+                      (filteredStudent) =>
+                        filteredStudent.studentId === student.studentId
+                    );
 
-        // You can now use `isVerified` to render the correct icon for each student
-        return (
-          <tr
-            key={student.studentId}
-            className="border-b border-gray-200 dark:border-neutral-700"
-          >
-            <td className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-              {student.name}
-            </td>
+                    // You can now use `isVerified` to render the correct icon for each student
+                    return (
+                      <tr
+                        key={student.studentId}
+                        className="border-b border-gray-200 dark:border-neutral-700"
+                      >
+                        <td className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {student.name}
+                        </td>
 
-            {/* Grade Inputs */}
-          {fields.map((field, idx) => (
-  <td className="px-6 py-3" key={idx}>
-    <Input
-      type="number"
-      placeholder={
-        field === "bnb"
-          ? "B/B"
-          : field.split(/(?=[A-Z])/).join(" ")
-      }
-      value={(() => {
-        const draftKey = `${classRoom}_${subject}_${session}`;
-        const drafts = localStorage.getItem(draftKey);
-        const parsedDrafts = drafts ? JSON.parse(drafts) : {};
-      
-        // First check parsed drafts, then fallback to studentResult, then empty string
-        const draftGrade = parsedDrafts[student.studentId]?.grades?.[idx];
-        const studentGrade = studentResult?.grades?.[idx];
-      
-        return String(draftGrade ?? studentGrade ?? "");
-      })()}
-      
-      max={field === "bnb" ? 20 : field === "exam" ? 40 : 10}
-      min={0}
-      onChange={(e) => {
-        const max = field === "bnb" ? 20 : field === "exam" ? 40 : 10;
-        const value = Number(e.target.value);
-      
-        if (value > max) {
-          alert(`Value for "${field}" exceeds the maximum allowed (${max}).`);
-          return;
-        }
-      
-        const draftKey = `${classRoom}_${subject}_${session}`;
-        const newGrades = [...(studentResult?.grades || [])];
-        newGrades[idx] = String(value); // Convert to string before assignment
-      
-        const drafts = localStorage.getItem(draftKey);
-        const existingDrafts = drafts ? JSON.parse(drafts) : {};
-      
-        existingDrafts[student.studentId] = {
-          grades: newGrades,
-          sum: studentResult?.sum || 0, // Default sum
-          grade: studentResult?.grade || "N/A", // Default grade
-        };
-      
-        localStorage.setItem(draftKey, JSON.stringify(existingDrafts));
-      
-        handleAddResult(student.studentId, newGrades);
-      }}
-      
-      
-      onKeyDown={(e) => {
-        if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-          e.preventDefault();
-          inputRefs.current[idx + 1]?.focus(); // Move to the next field
-        } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-          e.preventDefault();
-          inputRefs.current[idx - 1]?.focus(); // Move to the previous field
-        }
-      }}
-      ref={(el) => {
-        inputRefs.current[idx] = el;
-      }} // Store refs for each input
-      className="w-full text-sm text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-purple-500 focus:border-purple-500"
-    />
-  </td>
-))}
+                        {/* Grade Inputs */}
+                        {fields.map((field, idx) => (
+                          <td className="px-6 py-3" key={idx}>
+                            <Input
+                              type="number"
+                              placeholder={
+                                field === "bnb"
+                                  ? "B/B"
+                                  : field.split(/(?=[A-Z])/).join(" ")
+                              }
+                              value={(() => {
+                                const draftKey = `${classRoom}_${subject}_${session}`;
+                                const drafts = localStorage.getItem(draftKey);
+                                const parsedDrafts = drafts
+                                  ? JSON.parse(drafts)
+                                  : {};
 
-            <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
-              {studentResult ? studentResult.sum : "-"}
-            </td>
-            <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
-              {studentResult ? studentResult.grade : "-"}
-            </td>
-            {/* New Column Showing Yes/No for Student in Results */}
-            <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
-              <div
-                key={student.studentId}
-                className="flex items-center justify-center"
-              >
-                {isVerified ? (
-                  <Image
-                    src="/images/verified-p.png"
-                    height={18}
-                    width={18}
-                    alt="Verified"
-                    className="mr-1"
-                  />
-                ) : (
-                  <Image
-                    src="/images/unverified.png"
-                    height={18}
-                    width={18}
-                    alt="Unverified"
-                    className="mr-1"
-                  />
-                )}
-              </div>
-            </td>
-          </tr>
-        );
-      })}
-  
-</tbody>
+                                // First check parsed drafts, then fallback to studentResult, then empty string
+                                const draftGrade =
+                                  parsedDrafts[student.studentId]?.grades?.[
+                                    idx
+                                  ];
+                                const studentGrade =
+                                  studentResult?.grades?.[idx];
 
+                                return String(draftGrade ?? studentGrade ?? "");
+                              })()}
+                              max={
+                                field === "bnb"
+                                  ? 20
+                                  : field === "exam"
+                                  ? 40
+                                  : 10
+                              }
+                              min={0}
+                              onChange={(e) => {
+                                const max =
+                                  field === "bnb"
+                                    ? 20
+                                    : field === "exam"
+                                    ? 40
+                                    : 10;
+                                const value = Number(e.target.value);
+
+                                if (value > max) {
+                                  alert(
+                                    `Value for "${field}" exceeds the maximum allowed (${max}).`
+                                  );
+                                  return;
+                                }
+
+                                const draftKey = `${classRoom}_${subject}_${session}`;
+                                const newGrades = [
+                                  ...(studentResult?.grades || []),
+                                ];
+                                newGrades[idx] = String(value); // Convert to string before assignment
+
+                                const drafts = localStorage.getItem(draftKey);
+                                const existingDrafts = drafts
+                                  ? JSON.parse(drafts)
+                                  : {};
+
+                                existingDrafts[student.studentId] = {
+                                  grades: newGrades,
+                                  sum: studentResult?.sum || 0, // Default sum
+                                  grade: studentResult?.grade || "N/A", // Default grade
+                                };
+
+                                localStorage.setItem(
+                                  draftKey,
+                                  JSON.stringify(existingDrafts)
+                                );
+
+                                handleAddResult(student.studentId, newGrades);
+                              }}
+                              onKeyDown={(e) => {
+                                if (
+                                  e.key === "ArrowRight" ||
+                                  e.key === "ArrowDown"
+                                ) {
+                                  e.preventDefault();
+                                  inputRefs.current[idx + 1]?.focus(); // Move to the next field
+                                } else if (
+                                  e.key === "ArrowLeft" ||
+                                  e.key === "ArrowUp"
+                                ) {
+                                  e.preventDefault();
+                                  inputRefs.current[idx - 1]?.focus(); // Move to the previous field
+                                }
+                              }}
+                              ref={(el) => {
+                                inputRefs.current[idx] = el;
+                              }} // Store refs for each input
+                              className="w-full text-sm text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-neutral-700 rounded-md focus:ring-purple-500 focus:border-purple-500"
+                            />
+                          </td>
+                        ))}
+
+                        <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
+                          {studentResult ? studentResult.sum : "-"}
+                        </td>
+                        <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
+                          {studentResult ? studentResult.grade : "-"}
+                        </td>
+                        {/* New Column Showing Yes/No for Student in Results */}
+                        <td className="px-6 py-3 text-sm text-gray-800 dark:text-gray-200">
+                          <div
+                            key={student.studentId}
+                            className="flex items-center justify-center"
+                          >
+                            {isVerified ? (
+                              <Image
+                                src="/images/verified-p.png"
+                                height={18}
+                                width={18}
+                                alt="Verified"
+                                className="mr-1"
+                              />
+                            ) : (
+                              <Image
+                                src="/images/unverified.png"
+                                height={18}
+                                width={18}
+                                alt="Unverified"
+                                className="mr-1"
+                              />
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+              }
+            </tbody>
           </table>
         )}
       </div>
