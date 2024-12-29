@@ -100,7 +100,7 @@ export const fetchResultData = async ({
   ]);
   if (fetchedResults) {
     console.log("Rerieved the result data", fetchedResults);
-    return parseStringify(fetchedResults);
+    return parseStringify(fetchedResults.documents);
   }
   console.log("Nothing like such", fetchedResults);
   return null;
@@ -121,7 +121,7 @@ export const deleteClassResult = async ({
   const { database } = await createAdminClient();
   const hem =
     term === "1st Term" ? FIRST : term === "2nd Term" ? SECOND : THIRD;
-  const index = `${session}_${term}_${classRoom}_${subject}`;
+
   const dataToDelete = await fetchResultData({
     classRoom,
     session,
@@ -129,10 +129,64 @@ export const deleteClassResult = async ({
     subject,
   });
   if (dataToDelete) {
-    await database.deleteDocument(
-      DATABASE_ID!,
-      hem!,
-      dataToDelete.documents[0].$id
-    );
+    console.log("Metadata retrieved successfully:", dataToDelete);
+    await database.deleteDocument(DATABASE_ID!, hem!, dataToDelete[0].$id);
+    console.log("Class scores deleted successfullt");
+  }
+  console.log("Nothing found ");
+};
+export const editResults = async ({
+  classRoom,
+  session,
+  term,
+  subject,
+  scores,
+}: {
+  classRoom: string;
+  session: string;
+  term: string;
+  subject: string;
+  scores: string[]; // Array of new scores
+}) => {
+  const { database } = await createAdminClient();
+
+  // Determine the correct term constant (FIRST, SECOND, THIRD)
+  const hem =
+    term === "1st Term" ? FIRST : term === "2nd Term" ? SECOND : THIRD;
+
+  // Fetch the existing data for the given class, session, term, and subject
+  const dataToEdit = await fetchResultData({
+    classRoom,
+    session,
+    term,
+    subject,
+  });
+
+  if (dataToEdit) {
+    // Assuming the dataToEdit is an array of student records with studentId and current scores
+    const studentRecords = dataToEdit;
+
+    // Update the scores in each student record
+    const updatedStudents = studentRecords.map((student, index) => {
+      return {
+        ...student, // Copy existing student data
+        scores: scores[index], // Replace the old score with the new one from the scores[] array
+      };
+    });
+
+    // Loop through each updated student and update their record in the database
+    for (const student of updatedStudents) {
+      const updatedResult = await database.updateDocument(
+        DATABASE_ID!,
+        hem!, // Term identifier (FIRST, SECOND, or THIRD)
+        dataToEdit[0].$id, // Update the document by its ID
+        {
+          scores: student.scores, // Only update the scores for the student
+        }
+      );
+
+      // Optionally handle the result for each student or log it
+      console.log(`Updated result for student ${student.$id}`, updatedResult);
+    }
   }
 };
